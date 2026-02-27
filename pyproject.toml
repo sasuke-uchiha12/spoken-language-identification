@@ -3,5 +3,16 @@ name = "spoken-language-identification"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = [
+    "transformers",
+    "accelerate>=1.1.0",
+    "datasets[audio]",
+    "torch",
+    "torchaudio",
+    "wandb",
+    "huggingface-hub",
+    "numpy",
+    "scikit-learn",
+    "matplotlib",
+]
