@@ -95,9 +95,9 @@ def configure_mac_profile() -> None:
     cfg.per_device_train_batch_size = 1
     cfg.per_device_eval_batch_size = 1
     cfg.gradient_accumulation_steps = 4
-    cfg.learning_rate = 5e-6
+    cfg.learning_rate = 7e-6
     cfg.max_grad_norm = 1.0
-    cfg.max_duration_sec = 7
+    cfg.max_duration_sec = 5
     cfg.group_by_length = True
     cfg.fp16 = False
     cfg.logging_steps = 20
