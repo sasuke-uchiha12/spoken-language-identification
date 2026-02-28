@@ -10,7 +10,69 @@ so model is learning but,
 Run 1 
 learning_rate: 1e-5 -> 5e-6 (lower than prev, to reduce the unstable parameter, logs showed unstable gradients) -> grad_norm
 max_duration_sec: 5 -> 7 (gives, model more speech context per sample) -> per languages results had some languages at 0 accuracy
+add gradient clipping: max_grad_norm = 1 -> later eval_accuracy improved slowely near the end
 
+Run 1 Conclusion(stopped in b/w): 
+Baseline vs Tuning Report
+
+1) Baseline reference (best completed run)
+
+Run: SLID_facebook-mms-300m_1e-05_20260227_165620
+Final metrics:
+eval_accuracy = 0.2197
+eval_macro_f1 = 0.1892
+Strength: higher overall accuracy and macro-F1
+Weakness: unstable gradients at times, some languages still weak/zero
+2) Tuned run tested
+
+Changes applied:
+learning_rate: 1e-5 -> 5e-6
+max_duration_sec: 5 -> 7
+max_grad_norm: 1.0 (clipping)
+Observed behavior:
+Training stability improved somewhat (fewer frequent spikes, though spikes still appear)
+Some per-language coverage changed
+But overall metrics at matched epochs were worse than baseline
+3) Problem identified (compared to baseline)
+At comparable epochs, tuned run underperformed baseline:
+
+Around epoch ~1.0:
+Tuned: acc 0.123, macro_f1 0.0769
+Baseline: acc 0.1479, macro_f1 0.1093
+Around epoch ~1.10:
+Tuned: acc 0.1261, macro_f1 0.0779
+Baseline: acc 0.1421, macro_f1 0.1108
+Around epoch ~1.20:
+Tuned: acc 0.1233, macro_f1 0.0732
+Baseline: acc 0.1561, macro_f1 0.1264
+Around epoch ~1.29:
+Tuned: acc 0.1336, macro_f1 0.0848
+Baseline: acc 0.1567, macro_f1 0.1152
+Conclusion: tuned config is too conservative / slower-learning in this regime (and/or harmed by longer duration at current settings).
+
+4) Root-cause hypothesis
+
+LR=5e-6 likely too low for this setup, causing underfitting in early-mid training.
+Increasing duration to 7s simultaneously increased difficulty/variance and training cost.
+Combination did not beat baseline despite clipping.
+5) Solution (next tuning step)
+Use a controlled correction:
+
+Keep: max_grad_norm = 1.0 (stability benefit)
+Change:
+learning_rate = 7e-6 (middle ground between 1e-5 and 5e-6)
+max_duration_sec = 5 (revert to baseline context)
+Keep other settings same for fair comparison.
+6) Success criteria for next run
+Compare at matched epochs (~1.0, ~1.2, ~1.3) and final:
+
+Must beat tuned run clearly
+Preferably approach/exceed baseline trajectory
+Target: improve both eval_accuracy and eval_macro_f1 vs the failed tuned attempt
 
 Run 2 
-add gradient clipping: max_grad_norm = 1 -> late eval_accuracy improved slowely near the end
+learning_rate: 5e-6 -> 7e-6 
+max_duration_sec: 7 -> 5 
+add gradient clipping: max_grad_norm = 1 -> later eval_accuracy improved slowely near the end (unchanged)
+This isolates whether the drop came from too-low LR + longer audio together.
+
