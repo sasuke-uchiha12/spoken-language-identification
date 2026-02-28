@@ -53,6 +53,7 @@ class TrainConfig:
     learning_rate: float = 1e-5
     weight_decay: float = 0.01
     warmup_ratio: float = 0.1
+    max_grad_norm: Optional[float] = None
 
     group_by_length: bool = False
     logging_steps: int = 10
@@ -492,6 +493,8 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         kwargs["seed"] = cfg.seed
     if "data_seed" in ta_sig:
         kwargs["data_seed"] = cfg.seed
+    if cfg.max_grad_norm is not None and "max_grad_norm" in ta_sig:
+        kwargs["max_grad_norm"] = cfg.max_grad_norm
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
 

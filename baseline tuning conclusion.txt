@@ -1,0 +1,16 @@
+From eval_results.json: eval_accuracy approx. 0.2197, eval_macro_f1 approx. 0.1892
+some languages are strong but few are still near zero....
+training improved steadily but mostly equalized at the end.
+
+so model is learning but, 
+1. its uneven across the languages
+2. training has stability and noise (grad_norm spikes)
+3. it likely needs better optimization
+
+Run 1 
+learning_rate: 1e-5 -> 5e-6 (lower than prev, to reduce the unstable parameter, logs showed unstable gradients) -> grad_norm
+max_duration_sec: 5 -> 7 (gives, model more speech context per sample) -> per languages results had some languages at 0 accuracy
+
+
+Run 2 
+add gradient clipping: max_grad_norm = 1 -> late eval_accuracy improved slowely near the end
