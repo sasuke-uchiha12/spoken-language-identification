@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+
+# Local env / secrets
+.env
+.env.*
+
+# Training artifacts
+indic-SLID/
+wandb/
+runs/
+checkpoints/
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
