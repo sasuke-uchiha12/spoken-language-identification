@@ -39,7 +39,7 @@ except ImportError:  # Optional if HF login is not needed.
 # =========================
 @dataclass
 class TrainConfig:
-    model_id: str = "facebook/mms-300m"
+    model_id: str = "utter-project/mHuBERT-147"
     dataset_name: str = "badrex/nnti-dataset-full"
     sample_rate: int = 16000
     max_duration_sec: int = 7
