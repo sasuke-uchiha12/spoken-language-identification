@@ -44,6 +44,7 @@ class TrainConfig:
     sample_rate: int = 16000
     max_duration_sec: int = 7
     seed: int = 42
+    max_grad_norm: Optional[float] = None
 
     map_batch_size: int = 32
     per_device_train_batch_size: int = 8
@@ -494,6 +495,12 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+
+    if cfg.max_grad_norm is not None:
+        if "max_grad_norm" in ta_sig:
+            kwargs["max_grad_norm"] = cfg.max_grad_norm
+        else:
+            print("Warning: max_grad_norm is not supported in this transformers version. Ignoring it.")
 
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
