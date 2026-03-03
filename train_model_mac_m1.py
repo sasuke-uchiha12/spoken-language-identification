@@ -45,7 +45,7 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
         "weight_decay": cfg.weight_decay,
         "warmup_ratio": cfg.warmup_ratio,
         "load_best_model_at_end": True,
-        "metric_for_best_model": "accuracy",
+        "metric_for_best_model": "macro_f1",
         "greater_is_better": True,
         "save_total_limit": cfg.save_total_limit,
         "fp16": False,  # fp16 is CUDA-specific for this workflow.
@@ -103,13 +103,13 @@ def configure_mac_profile() -> None:
     cfg.eval_steps = 200
     cfg.save_steps = 200
 
-    # Task 2 mitigation: train-only waveform augmentation (mild settings).
+    # Task 2 mitigation (run 2): train-only waveform augmentation (gentler settings).
     cfg.enable_train_augmentation = True
-    cfg.augmentation_prob = 0.3
-    cfg.speed_min = 0.97
-    cfg.speed_max = 1.03
+    cfg.augmentation_prob = 0.25
+    cfg.speed_min = 0.98
+    cfg.speed_max = 1.02
     cfg.noise_std_min = 0.0005
-    cfg.noise_std_max = 0.002
+    cfg.noise_std_max = 0.0015
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps
