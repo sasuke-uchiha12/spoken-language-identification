@@ -40,10 +40,10 @@ Goal:
 - Keep mitigation gains while reducing regressions in some classes.
 
 Proposed config changes (relative to Mitigation 1):
-- `cfg.augmentation_prob = 0.25`
-- `cfg.speed_min = 0.98`
-- `cfg.speed_max = 1.02`
-- `cfg.noise_std_max = 0.0015`
+- `cfg.augmentation_prob = 0.25` [0.30 to 0.25; 30% may be slightly strong for some classes. why: less distortion pressure, better class stability]
+- `cfg.speed_min = 0.98` [less slowdown, so range becomes tighter around 1.0 and augmentation is gentler.]
+- `cfg.speed_max = 1.02` [less speedup, "", also avoid hurting sensitive classes while still preventing speaker memorization (both min and max)]
+- `cfg.noise_std_max = 0.0015` [0.002 to 0.0015; current noise may hurt cleaner cues for some languages; gain: preserve mitigation while improving accuracy on regressed classes]
 
 Optional checkpoint-selection improvement (base script):
 - Consider `metric_for_best_model = "macro_f1"` for better class-balance checkpoint choice.
