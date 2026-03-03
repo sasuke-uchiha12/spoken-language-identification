@@ -100,16 +100,16 @@ def configure_mac_profile() -> None:
     cfg.group_by_length = True
     cfg.fp16 = False
     cfg.logging_steps = 20
-    cfg.eval_steps = 200
-    cfg.save_steps = 200
+    cfg.eval_steps = 100
+    cfg.save_steps = 100
 
-    # Task 2 mitigation (run 2): train-only waveform augmentation (gentler settings).
+    # Task 2 mitigation (run 3A): train-only waveform augmentation (Mitigation 1 strength).
     cfg.enable_train_augmentation = True
-    cfg.augmentation_prob = 0.25
-    cfg.speed_min = 0.98
-    cfg.speed_max = 1.02
+    cfg.augmentation_prob = 0.30
+    cfg.speed_min = 0.97
+    cfg.speed_max = 1.03
     cfg.noise_std_min = 0.0005
-    cfg.noise_std_max = 0.0015
+    cfg.noise_std_max = 0.002
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps
