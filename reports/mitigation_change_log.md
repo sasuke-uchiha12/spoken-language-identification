@@ -34,30 +34,58 @@ Observed outcome vs control:
 
 ---
 
-## Mitigation 2 (Planned Next Candidate, Not Yet Executed)
+## Mitigation 2 (Implemented and Executed)
 
-Goal:
-- Keep mitigation gains while reducing regressions in some classes.
+Run:
+- `indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260303_071843`
 
-Proposed config changes (relative to Mitigation 1):
-- `cfg.augmentation_prob = 0.25` [0.30 to 0.25; 30% may be slightly strong for some classes. why: less distortion pressure, better class stability]
-- `cfg.speed_min = 0.98` [less slowdown, so range becomes tighter around 1.0 and augmentation is gentler.]
-- `cfg.speed_max = 1.02` [less speedup, "", also avoid hurting sensitive classes while still preventing speaker memorization (both min and max)]
-- `cfg.noise_std_max = 0.0015` [0.002 to 0.0015; current noise may hurt cleaner cues for some languages; gain: preserve mitigation while improving accuracy on regressed classes]
+Config changes (relative to Mitigation 1):
+- `cfg.augmentation_prob = 0.25`
+- `cfg.speed_min = 0.98`
+- `cfg.speed_max = 1.02`
+- `cfg.noise_std_max = 0.0015`
+- `metric_for_best_model = "macro_f1"`
 
-Optional checkpoint-selection improvement (base script):
-- Consider `metric_for_best_model = "macro_f1"` for better class-balance checkpoint choice.
-
-Status:
-- Planned for next run; no results yet.
+Observed outcome vs Mitigation 1:
+- `eval_accuracy`: `0.53879 -> 0.52788` (`-0.01091`)
+- `eval_macro_f1`: `0.48676 -> 0.48284` (`-0.00392`)
+- `eval_loss`: `2.15041 -> 2.13853` (improved)
+- Tradeoff run: gained on some weak classes, regressed on several previously strong classes.
 
 ---
 
-## Template for Future Iterations
+## Mitigation 3A (Implemented)
 
-### Mitigation 3
-- Run ID:
-- Config changes:
-- Outcome vs previous:
-- Keep / rollback decision:
+Status:
+- Implemented in `train_model_mac_m1.py` (ready to run).
 
+Config changes (relative to Mitigation 2):
+- `cfg.eval_steps = 100` (from `200`)
+- `cfg.save_steps = 100` (from `200`)
+- `cfg.enable_train_augmentation = True`
+- `cfg.augmentation_prob = 0.30`
+- `cfg.speed_min = 0.97`
+- `cfg.speed_max = 1.03`
+- `cfg.noise_std_min = 0.0005`
+- `cfg.noise_std_max = 0.002`
+- keep `metric_for_best_model = "macro_f1"`
+
+Goal:
+- Recover stronger overall metrics seen in Mitigation 1 while keeping macro-F1-based checkpoint selection and denser eval/save cadence for better checkpoint capture.
+
+---
+
+## Mitigation 3B (Planned Fallback)
+
+Trigger:
+- Run only if Mitigation 3A fails macro-F1-first selection with accuracy guardrail.
+
+Planned config (relative to 3A):
+- `cfg.augmentation_prob = 0.28`
+- `cfg.speed_min = 0.975`
+- `cfg.speed_max = 1.025`
+- `cfg.noise_std_max = 0.0018`
+- keep all other settings identical to 3A.
+
+Goal:
+- Keep mitigation pressure while reducing over-perturbation risk on sensitive classes.
