@@ -103,13 +103,13 @@ def configure_mac_profile() -> None:
     cfg.eval_steps = 100
     cfg.save_steps = 100
 
-    # Task 2 mitigation (run 3A): train-only waveform augmentation (Mitigation 1 strength).
+    # Task 2 mitigation (run 3B): train-only waveform augmentation (middle-strength fallback).
     cfg.enable_train_augmentation = True
-    cfg.augmentation_prob = 0.30
-    cfg.speed_min = 0.97
-    cfg.speed_max = 1.03
+    cfg.augmentation_prob = 0.28
+    cfg.speed_min = 0.975
+    cfg.speed_max = 1.025
     cfg.noise_std_min = 0.0005
-    cfg.noise_std_max = 0.002
+    cfg.noise_std_max = 0.0018
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps
