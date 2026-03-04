@@ -64,6 +64,11 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+    if cfg.max_grad_norm is not None:
+        if "max_grad_norm" in ta_sig:
+            kwargs["max_grad_norm"] = cfg.max_grad_norm
+        else:
+            print("Warning: max_grad_norm is not supported in this transformers version. Ignoring it.")
 
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
@@ -102,7 +107,25 @@ def configure_mac_profile() -> None:
     cfg.logging_steps = 20
     cfg.eval_steps = 200
     cfg.save_steps = 200
-    cfg.enable_train_augmentation = False
+    cfg.enable_train_augmentation = True
+
+    # Mitigation 4 (full data-centric): global augmentation gate + one-of augmentation family.
+    cfg.augmentation_prob = 0.30
+    cfg.speed_min = 0.98
+    cfg.speed_max = 1.02
+    cfg.noise_std_min = 0.0005
+    cfg.noise_std_max = 0.0018
+    cfg.pitch_shift_prob = 0.20
+    cfg.pitch_shift_semitones_min = -1.0
+    cfg.pitch_shift_semitones_max = 1.0
+    cfg.spectral_aug_prob = 0.20
+    cfg.freq_mask_param = 8
+    cfg.time_mask_param = 12
+    cfg.num_freq_masks = 1
+    cfg.num_time_masks = 1
+
+    # Enable Task-3 representation visualization artifacts for each mitigation run.
+    cfg.run_tsne = True
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps

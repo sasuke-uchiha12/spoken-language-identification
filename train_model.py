@@ -13,7 +13,9 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import torch
 from datasets import Audio, load_dataset
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from torch.utils.data import DataLoader
 from transformers import (
     AutoConfig,
     AutoFeatureExtractor,
@@ -75,10 +77,24 @@ class TrainConfig:
     speed_max: float = 1.05
     noise_std_min: float = 0.0005
     noise_std_max: float = 0.003
+    pitch_shift_prob: float = 0.0
+    pitch_shift_semitones_min: float = -1.0
+    pitch_shift_semitones_max: float = 1.0
+    spectral_aug_prob: float = 0.0
+    freq_mask_param: int = 8
+    time_mask_param: int = 12
+    num_freq_masks: int = 1
+    num_time_masks: int = 1
 
     save_confusion_matrix_csv: bool = True
     save_confusion_matrix_png: bool = True
     save_per_language_csv: bool = True
+    run_tsne: bool = False
+    tsne_max_samples: int = 2200
+    tsne_batch_size: int = 8
+    tsne_perplexity: float = 30.0
+    tsne_random_state: int = 42
+    tsne_speaker_top_k: int = 12
     run_speaker_diagnostic: bool = True
     speaker_overlap_warn_ratio: float = 0.2
     speaker_seen_gap_warn: float = 0.10
@@ -188,6 +204,7 @@ class WaveformAugmenter:
         self.cfg = cfg
         self.sample_rate = sample_rate
         self.torchaudio = None
+        self._warned_pitch_unavailable = False
 
         if cfg.enable_train_augmentation:
             try:
@@ -198,18 +215,7 @@ class WaveformAugmenter:
                 ) from exc
             self.torchaudio = torchaudio
 
-    def maybe_augment(self, waveform: np.ndarray, sample_index: int) -> np.ndarray:
-        if not self.cfg.enable_train_augmentation:
-            return waveform
-
-        rng = np.random.default_rng(self.cfg.seed + int(sample_index))
-        if rng.random() > self.cfg.augmentation_prob:
-            return waveform
-
-        x = np.asarray(waveform, dtype=np.float32)
-        if x.ndim != 1:
-            x = np.squeeze(x)
-
+    def _apply_temporal_aug(self, x: np.ndarray, rng: np.random.Generator) -> np.ndarray:
         speed = float(rng.uniform(self.cfg.speed_min, self.cfg.speed_max))
         if abs(speed - 1.0) > 1e-6:
             new_freq = max(1, int(round(self.sample_rate * speed)))
@@ -229,6 +235,137 @@ class WaveformAugmenter:
         if noise_std > 0.0:
             noise = rng.normal(0.0, noise_std, size=x.shape).astype(np.float32)
             x = np.clip(x + noise, -1.0, 1.0)
+        return x
+
+    def _apply_pitch_shift(self, x: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+        if not hasattr(self.torchaudio.functional, "pitch_shift"):
+            if not self._warned_pitch_unavailable:
+                print(
+                    "Warning: torchaudio.functional.pitch_shift is unavailable; "
+                    "skipping pitch-shift augmentation."
+                )
+                self._warned_pitch_unavailable = True
+            return x
+
+        semitones = float(
+            rng.uniform(
+                self.cfg.pitch_shift_semitones_min,
+                self.cfg.pitch_shift_semitones_max,
+            )
+        )
+        if abs(semitones) < 1e-6:
+            return x
+
+        wave_t = torch.from_numpy(x).unsqueeze(0)
+        with torch.no_grad():
+            shifted = self.torchaudio.functional.pitch_shift(
+                wave_t,
+                sample_rate=self.sample_rate,
+                n_steps=semitones,
+            )
+        return np.clip(shifted.squeeze(0).cpu().numpy().astype(np.float32), -1.0, 1.0)
+
+    def _apply_spectral_aug(self, x: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+        wave_t = torch.from_numpy(x)
+        n_fft = 400
+        hop_length = 160
+        win_length = 400
+        window = torch.hann_window(win_length, dtype=wave_t.dtype)
+        with torch.no_grad():
+            spec = torch.stft(
+                wave_t,
+                n_fft=n_fft,
+                hop_length=hop_length,
+                win_length=win_length,
+                window=window,
+                return_complex=True,
+            )
+            mag = spec.abs()
+            phase = spec / (mag + 1e-8)
+            n_freq, n_time = mag.shape
+
+            for _ in range(max(0, int(self.cfg.num_freq_masks))):
+                max_width = max(0, min(int(self.cfg.freq_mask_param), n_freq))
+                if max_width <= 0:
+                    break
+                width = int(rng.integers(0, max_width + 1))
+                if width <= 0 or width >= n_freq:
+                    continue
+                start = int(rng.integers(0, n_freq - width + 1))
+                mag[start : start + width, :] = 0.0
+
+            for _ in range(max(0, int(self.cfg.num_time_masks))):
+                max_width = max(0, min(int(self.cfg.time_mask_param), n_time))
+                if max_width <= 0:
+                    break
+                width = int(rng.integers(0, max_width + 1))
+                if width <= 0 or width >= n_time:
+                    continue
+                start = int(rng.integers(0, n_time - width + 1))
+                mag[:, start : start + width] = 0.0
+
+            masked_spec = mag * phase
+            rec = torch.istft(
+                masked_spec,
+                n_fft=n_fft,
+                hop_length=hop_length,
+                win_length=win_length,
+                window=window,
+                length=wave_t.shape[0],
+            )
+
+        return np.clip(rec.cpu().numpy().astype(np.float32), -1.0, 1.0)
+
+    def maybe_augment(self, waveform: np.ndarray, sample_index: int) -> np.ndarray:
+        if not self.cfg.enable_train_augmentation:
+            return waveform
+
+        rng = np.random.default_rng(self.cfg.seed + int(sample_index))
+        # Global augmentation gate: apply one augmentation family with this probability.
+        if rng.random() > self.cfg.augmentation_prob:
+            return waveform
+
+        x = np.asarray(waveform, dtype=np.float32)
+        if x.ndim != 1:
+            x = np.squeeze(x)
+
+        candidates: List[str] = []
+        weights: List[float] = []
+
+        temporal_available = (
+            abs(self.cfg.speed_min - 1.0) > 1e-6
+            or abs(self.cfg.speed_max - 1.0) > 1e-6
+            or self.cfg.noise_std_max > 0.0
+        )
+        temporal_weight = max(0.0, 1.0 - self.cfg.pitch_shift_prob - self.cfg.spectral_aug_prob)
+        if temporal_available and temporal_weight > 0.0:
+            candidates.append("temporal")
+            weights.append(temporal_weight)
+
+        if self.cfg.pitch_shift_prob > 0.0:
+            candidates.append("pitch")
+            weights.append(float(self.cfg.pitch_shift_prob))
+
+        if self.cfg.spectral_aug_prob > 0.0:
+            candidates.append("spectral")
+            weights.append(float(self.cfg.spectral_aug_prob))
+
+        if not candidates:
+            return x
+
+        w = np.asarray(weights, dtype=np.float64)
+        if np.any(w < 0) or float(w.sum()) <= 0.0:
+            aug_choice = "temporal"
+        else:
+            w /= w.sum()
+            aug_choice = candidates[int(rng.choice(len(candidates), p=w))]
+
+        if aug_choice == "temporal":
+            x = self._apply_temporal_aug(x, rng)
+        elif aug_choice == "pitch":
+            x = self._apply_pitch_shift(x, rng)
+        elif aug_choice == "spectral":
+            x = self._apply_spectral_aug(x, rng)
 
         return x
 
@@ -292,6 +429,204 @@ def make_compute_metrics(int_to_str: Dict[int, str]):
         return metrics
 
     return compute_metrics
+
+
+def pool_sequence_representation(
+    last_hidden_state: torch.Tensor,
+    attention_mask: Optional[torch.Tensor],
+) -> torch.Tensor:
+    if last_hidden_state.ndim != 3:
+        return last_hidden_state
+    if attention_mask is None:
+        return last_hidden_state.mean(dim=1)
+
+    mask = attention_mask.to(last_hidden_state.device).float()
+    if mask.shape[1] != last_hidden_state.shape[1]:
+        return last_hidden_state.mean(dim=1)
+
+    denom = mask.sum(dim=1, keepdim=True).clamp_min(1.0)
+    masked = last_hidden_state * mask.unsqueeze(-1)
+    return masked.sum(dim=1) / denom
+
+
+def extract_last_layer_representations(
+    *,
+    model,
+    dataset_encoded,
+    data_collator,
+    batch_size: int,
+) -> np.ndarray:
+    dataloader = DataLoader(
+        dataset_encoded,
+        batch_size=max(1, batch_size),
+        shuffle=False,
+        collate_fn=data_collator,
+    )
+
+    model_was_training = model.training
+    model.eval()
+
+    device = next(model.parameters()).device
+    all_repr: List[np.ndarray] = []
+    with torch.no_grad():
+        for batch in dataloader:
+            batch.pop("labels", None)
+            batch.pop("speaker_labels", None)
+            batch = {k: v.to(device) for k, v in batch.items()}
+
+            try:
+                outputs = model(**batch, output_hidden_states=True)
+            except TypeError:
+                outputs = model(**batch)
+
+            hidden_states = getattr(outputs, "hidden_states", None)
+            if hidden_states is None and isinstance(outputs, tuple) and len(outputs) > 1:
+                hidden_states = outputs[1]
+            if hidden_states is None:
+                raise RuntimeError(
+                    "Could not access hidden states for t-SNE. "
+                    "Ensure the model forward supports output_hidden_states."
+                )
+
+            last_hidden = hidden_states[-1]
+            pooled = pool_sequence_representation(last_hidden, batch.get("attention_mask"))
+            all_repr.append(pooled.detach().cpu().numpy())
+
+    if model_was_training:
+        model.train()
+
+    return np.concatenate(all_repr, axis=0) if all_repr else np.empty((0, 0), dtype=np.float32)
+
+
+def sample_indices_for_tsne(
+    *,
+    languages: List[str],
+    max_samples: int,
+    seed: int,
+) -> np.ndarray:
+    n = len(languages)
+    if max_samples <= 0 or n <= max_samples:
+        return np.arange(n, dtype=np.int64)
+
+    rng = np.random.default_rng(seed)
+    labels = np.asarray(languages)
+    unique = sorted(set(languages))
+    selected: List[int] = []
+
+    quota = max(1, max_samples // max(1, len(unique)))
+    for label in unique:
+        label_idx = np.where(labels == label)[0]
+        take = min(len(label_idx), quota)
+        if take > 0:
+            picked = rng.choice(label_idx, size=take, replace=False)
+            selected.extend(picked.tolist())
+
+    if len(selected) < max_samples:
+        remaining = np.setdiff1d(np.arange(n, dtype=np.int64), np.array(selected, dtype=np.int64), assume_unique=False)
+        extra_take = min(len(remaining), max_samples - len(selected))
+        if extra_take > 0:
+            picked_extra = rng.choice(remaining, size=extra_take, replace=False)
+            selected.extend(picked_extra.tolist())
+
+    selected = sorted(set(selected))
+    return np.array(selected[:max_samples], dtype=np.int64)
+
+
+def run_tsne_and_save(
+    *,
+    representations: np.ndarray,
+    languages: List[str],
+    speaker_ids: List[str],
+    output_dir: Path,
+    cfg: TrainConfig,
+) -> None:
+    if representations.size == 0:
+        print("t-SNE skipped: empty representation tensor.")
+        return
+
+    indices = sample_indices_for_tsne(
+        languages=languages,
+        max_samples=cfg.tsne_max_samples,
+        seed=cfg.tsne_random_state,
+    )
+
+    reps = representations[indices]
+    langs = [languages[i] for i in indices]
+    speakers = [str(speaker_ids[i]) for i in indices]
+
+    max_perplexity = max(5.0, float((len(indices) - 1) // 3))
+    perplexity = min(float(cfg.tsne_perplexity), max_perplexity)
+    if perplexity < 5.0:
+        print("t-SNE skipped: not enough samples for stable projection.")
+        return
+
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        init="pca",
+        learning_rate="auto",
+        random_state=cfg.tsne_random_state,
+    )
+    coords = tsne.fit_transform(reps)
+
+    output_csv = output_dir / "tsne_validation_points.csv"
+    rows = []
+    for i, (x, y) in enumerate(coords.tolist()):
+        rows.append(
+            {
+                "x": float(x),
+                "y": float(y),
+                "language": langs[i],
+                "speaker_id": speakers[i],
+            }
+        )
+    write_rows_csv(output_csv, rows, ["x", "y", "language", "speaker_id"])
+    print(f"Saved t-SNE points CSV: {output_csv}")
+
+    import matplotlib.pyplot as plt
+
+    # t-SNE by language
+    fig, ax = plt.subplots(figsize=(10, 8))
+    unique_langs = sorted(set(langs))
+    cmap = plt.cm.get_cmap("tab20", max(20, len(unique_langs)))
+    for i, lang in enumerate(unique_langs):
+        mask = np.array([x == lang for x in langs], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=9, alpha=0.75, color=cmap(i), label=lang)
+    ax.set_title("t-SNE (Validation Last-Layer) - Color by Language")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=7, ncol=3, loc="best")
+    fig.tight_layout()
+    lang_png = output_dir / "tsne_validation_by_language.png"
+    fig.savefig(lang_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE language plot: {lang_png}")
+
+    # t-SNE by speaker (top-k speakers, others grouped)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    speaker_counts: Dict[str, int] = {}
+    for s in speakers:
+        speaker_counts[s] = speaker_counts.get(s, 0) + 1
+    top_speakers = [s for s, _ in sorted(speaker_counts.items(), key=lambda x: x[1], reverse=True)[: cfg.tsne_speaker_top_k]]
+
+    other_mask = np.array([s not in top_speakers for s in speakers], dtype=bool)
+    if np.any(other_mask):
+        ax.scatter(coords[other_mask, 0], coords[other_mask, 1], s=8, alpha=0.25, color="lightgray", label="other")
+
+    cmap_spk = plt.cm.get_cmap("tab20", max(20, len(top_speakers)))
+    for i, spk in enumerate(top_speakers):
+        mask = np.array([x == spk for x in speakers], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=10, alpha=0.85, color=cmap_spk(i), label=spk)
+
+    ax.set_title(f"t-SNE (Validation Last-Layer) - Color by Speaker (Top {len(top_speakers)})")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=6, ncol=2, loc="best")
+    fig.tight_layout()
+    spk_png = output_dir / "tsne_validation_by_speaker_topk.png"
+    fig.savefig(spk_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE speaker plot: {spk_png}")
 
 
 def write_confusion_matrix_csv(path: Path, cm: np.ndarray, label_names: List[str]) -> None:
@@ -588,9 +923,14 @@ def main() -> None:
             augmenter = WaveformAugmenter(cfg, sample_rate=cfg.sample_rate)
             apply_train_aug = True
             print(
-                "Train augmentation enabled: speed perturbation + Gaussian noise "
-                f"(p={cfg.augmentation_prob}, speed=[{cfg.speed_min}, {cfg.speed_max}], "
-                f"noise_std=[{cfg.noise_std_min}, {cfg.noise_std_max}])."
+                "Train augmentation enabled with global gate "
+                f"(p={cfg.augmentation_prob}). One-of: temporal/speed+noise "
+                f"(speed=[{cfg.speed_min}, {cfg.speed_max}], "
+                f"noise_std=[{cfg.noise_std_min}, {cfg.noise_std_max}]), "
+                f"pitch_shift(prob={cfg.pitch_shift_prob}, "
+                f"semitones=[{cfg.pitch_shift_semitones_min}, {cfg.pitch_shift_semitones_max}]), "
+                f"spectral(prob={cfg.spectral_aug_prob}, freq_mask={cfg.freq_mask_param}x{cfg.num_freq_masks}, "
+                f"time_mask={cfg.time_mask_param}x{cfg.num_time_masks})."
             )
 
     train_preprocess = make_preprocess_function(
@@ -713,6 +1053,25 @@ def main() -> None:
             cfg=cfg,
             output_dir=diagnostics_dir,
         )
+
+    if cfg.run_tsne:
+        try:
+            print("t-SNE export starting (validation last-layer representations)...")
+            representations = extract_last_layer_representations(
+                model=trainer.model,
+                dataset_encoded=valid_ds_encoded,
+                data_collator=data_collator,
+                batch_size=cfg.tsne_batch_size,
+            )
+            run_tsne_and_save(
+                representations=representations,
+                languages=[str(x) for x in valid_ds_encoded["language"]],
+                speaker_ids=[str(x) for x in valid_ds_encoded["speaker_id"]],
+                output_dir=diagnostics_dir,
+                cfg=cfg,
+            )
+        except Exception as exc:
+            print(f"Warning: t-SNE export failed and was skipped: {exc}")
 
     if wandb_enabled and wandb is not None:
         wandb.finish()
