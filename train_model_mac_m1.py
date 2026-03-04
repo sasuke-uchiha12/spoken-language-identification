@@ -103,13 +103,20 @@ def configure_mac_profile() -> None:
     cfg.eval_steps = 100
     cfg.save_steps = 100
 
-    # Task 2 mitigation (run 3B): train-only waveform augmentation (middle-strength fallback).
-    cfg.enable_train_augmentation = True
+    # Task 2 DANN run 1: keep augmentation OFF to isolate DANN effect.
+    cfg.enable_train_augmentation = False
     cfg.augmentation_prob = 0.28
     cfg.speed_min = 0.975
     cfg.speed_max = 1.025
     cfg.noise_std_min = 0.0005
     cfg.noise_std_max = 0.0018
+
+    # Optional Task 2 model-based mitigation (DANN).
+    cfg.enable_dann = True
+    cfg.dann_speaker_loss_weight = 0.1
+    cfg.dann_grl_lambda = 1.0
+    cfg.dann_use_lambda_schedule = True
+    cfg.dann_speaker_head_dropout = 0.1
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps

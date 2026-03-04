@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import inspect
 import json
+import math
 import os
 import re
 from dataclasses import asdict, dataclass, field
@@ -12,11 +13,14 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from datasets import Audio, load_dataset
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from transformers import (
     AutoConfig,
     AutoFeatureExtractor,
+    AutoModel,
     AutoModelForAudioClassification,
     Trainer,
     TrainingArguments,
@@ -88,6 +92,12 @@ class TrainConfig:
     attention_dropout: float = 0.1
     activation_dropout: float = 0.1
     feat_proj_dropout: float = 0.1
+
+    enable_dann: bool = False
+    dann_speaker_loss_weight: float = 0.1
+    dann_grl_lambda: float = 1.0
+    dann_use_lambda_schedule: bool = True
+    dann_speaker_head_dropout: float = 0.1
 
     timestamp: str = field(default_factory=lambda: datetime.now().strftime("%Y%m%d_%H%M%S"))
 
@@ -180,7 +190,140 @@ class AudioDataCollator:
         }
         batch = self.feature_extractor.pad(batch, padding=True, return_tensors="pt")
         batch["labels"] = torch.tensor([f["label"] for f in features], dtype=torch.long)
+        if "speaker_labels" in features[0]:
+            batch["speaker_labels"] = torch.tensor(
+                [int(f.get("speaker_labels", -100)) for f in features], dtype=torch.long
+            )
         return batch
+
+
+class GradientReversalFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, lambda_: float) -> torch.Tensor:
+        ctx.lambda_ = float(lambda_)
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output: torch.Tensor):
+        return grad_output.neg() * ctx.lambda_, None
+
+
+def grad_reverse(x: torch.Tensor, lambda_: float) -> torch.Tensor:
+    return GradientReversalFunction.apply(x, lambda_)
+
+
+class DANNForAudioClassification(nn.Module):
+    def __init__(
+        self,
+        *,
+        model_id: str,
+        num_labels: int,
+        num_speakers: int,
+        speaker_head_dropout: float,
+    ) -> None:
+        super().__init__()
+        self.encoder = AutoModel.from_pretrained(model_id)
+        self.language_classifier = nn.LazyLinear(num_labels)
+        self.speaker_classifier = nn.Sequential(
+            nn.Dropout(p=speaker_head_dropout),
+            nn.LazyLinear(num_speakers),
+        )
+
+    def _pool(self, sequence_output: torch.Tensor, attention_mask: Optional[torch.Tensor]) -> torch.Tensor:
+        if sequence_output.ndim != 3:
+            return sequence_output
+        if attention_mask is None:
+            return sequence_output.mean(dim=1)
+        mask = attention_mask.to(sequence_output.device).float()
+        if mask.shape[1] != sequence_output.shape[1]:
+            return sequence_output.mean(dim=1)
+        denom = mask.sum(dim=1, keepdim=True).clamp_min(1.0)
+        masked = sequence_output * mask.unsqueeze(-1)
+        return masked.sum(dim=1) / denom
+
+    def forward(
+        self,
+        input_values: Optional[torch.Tensor] = None,
+        input_features: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        speaker_labels: Optional[torch.Tensor] = None,
+        grl_lambda: float = 1.0,
+        **_: Any,
+    ) -> Dict[str, torch.Tensor]:
+        encoder_inputs: Dict[str, torch.Tensor] = {}
+        if input_values is not None:
+            encoder_inputs["input_values"] = input_values
+        if input_features is not None:
+            encoder_inputs["input_features"] = input_features
+        if attention_mask is not None:
+            encoder_inputs["attention_mask"] = attention_mask
+
+        try:
+            encoder_outputs = self.encoder(**encoder_inputs)
+        except TypeError:
+            encoder_inputs.pop("attention_mask", None)
+            encoder_outputs = self.encoder(**encoder_inputs)
+
+        if hasattr(encoder_outputs, "last_hidden_state") and encoder_outputs.last_hidden_state is not None:
+            sequence_output = encoder_outputs.last_hidden_state
+        else:
+            sequence_output = encoder_outputs[0]
+
+        pooled = self._pool(sequence_output, attention_mask)
+        language_logits = self.language_classifier(pooled)
+        speaker_logits = self.speaker_classifier(grad_reverse(pooled, grl_lambda))
+
+        return {
+            "logits": language_logits,
+            "speaker_logits": speaker_logits,
+        }
+
+
+class DANNTrainer(Trainer):
+    def __init__(
+        self,
+        *args: Any,
+        dann_speaker_loss_weight: float,
+        dann_grl_lambda: float,
+        dann_use_lambda_schedule: bool,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.dann_speaker_loss_weight = float(dann_speaker_loss_weight)
+        self.dann_grl_lambda = float(dann_grl_lambda)
+        self.dann_use_lambda_schedule = bool(dann_use_lambda_schedule)
+
+    def _current_grl_lambda(self) -> float:
+        if not self.dann_use_lambda_schedule:
+            return self.dann_grl_lambda
+        max_steps = max(1, int(getattr(self.state, "max_steps", 0) or 1))
+        progress = float(getattr(self.state, "global_step", 0)) / max_steps
+        schedule = 2.0 / (1.0 + math.exp(-10.0 * progress)) - 1.0
+        return self.dann_grl_lambda * schedule
+
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):  # type: ignore[override]
+        labels = inputs.get("labels")
+        speaker_labels = inputs.get("speaker_labels")
+        outputs = model(**inputs, grl_lambda=self._current_grl_lambda())
+
+        language_logits = outputs["logits"]
+        language_loss = F.cross_entropy(language_logits, labels)
+        total_loss = language_loss
+
+        speaker_loss = None
+        if model.training and speaker_labels is not None:
+            valid = speaker_labels >= 0
+            if torch.any(valid):
+                speaker_logits = outputs["speaker_logits"]
+                speaker_loss = F.cross_entropy(speaker_logits[valid], speaker_labels[valid])
+                total_loss = language_loss + (self.dann_speaker_loss_weight * speaker_loss)
+
+        if return_outputs:
+            outputs["language_loss"] = language_loss.detach()
+            if speaker_loss is not None:
+                outputs["speaker_loss"] = speaker_loss.detach()
+            return total_loss, outputs
+        return total_loss
 
 
 class WaveformAugmenter:
@@ -237,6 +380,7 @@ def make_preprocess_function(
     *,
     feature_extractor,
     str_to_int: Dict[str, int],
+    speaker_to_int: Optional[Dict[str, int]],
     input_features_key: str,
     max_duration_sec: int,
     augmenter: Optional[WaveformAugmenter] = None,
@@ -261,6 +405,8 @@ def make_preprocess_function(
         )
 
         inputs["label"] = [str_to_int[x] for x in examples["language"]]
+        if speaker_to_int is not None:
+            inputs["speaker_labels"] = [speaker_to_int.get(str(s), -100) for s in examples["speaker_id"]]
 
         inputs[input_features_key] = [np.asarray(x, dtype=np.float32) for x in inputs[input_features_key]]
         inputs["length"] = [len(f) for f in inputs[input_features_key]]
@@ -512,6 +658,7 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
 
 def build_trainer(
     *,
+    cfg: TrainConfig,
     model,
     training_args,
     train_dataset,
@@ -535,7 +682,13 @@ def build_trainer(
     elif "tokenizer" in trainer_sig:
         kwargs["tokenizer"] = feature_extractor
 
-    return Trainer(**kwargs)
+    trainer_cls = DANNTrainer if cfg.enable_dann else Trainer
+    if cfg.enable_dann:
+        kwargs["dann_speaker_loss_weight"] = cfg.dann_speaker_loss_weight
+        kwargs["dann_grl_lambda"] = cfg.dann_grl_lambda
+        kwargs["dann_use_lambda_schedule"] = cfg.dann_use_lambda_schedule
+
+    return trainer_cls(**kwargs)
 
 
 def main() -> None:
@@ -575,6 +728,17 @@ def main() -> None:
     str_to_int = {label: idx for idx, label in enumerate(label_list)}
     int_to_str = {idx: label for label, idx in str_to_int.items()}
     num_labels = len(label_list)
+    speaker_to_int: Optional[Dict[str, int]] = None
+    if cfg.enable_dann:
+        train_speaker_list = sorted(set(map(str, train_ds["speaker_id"])))
+        speaker_to_int = {speaker_id: idx for idx, speaker_id in enumerate(train_speaker_list)}
+        print(f"DANN enabled: adversarial speaker head with {len(train_speaker_list)} train speakers.")
+        print(
+            "DANN params: "
+            f"speaker_loss_weight={cfg.dann_speaker_loss_weight}, "
+            f"grl_lambda={cfg.dann_grl_lambda}, "
+            f"lambda_schedule={cfg.dann_use_lambda_schedule}"
+        )
 
     augmenter: Optional[WaveformAugmenter] = None
     apply_train_aug = False
@@ -596,6 +760,7 @@ def main() -> None:
     train_preprocess = make_preprocess_function(
         feature_extractor=feature_extractor,
         str_to_int=str_to_int,
+        speaker_to_int=speaker_to_int,
         input_features_key=input_features_key,
         max_duration_sec=cfg.max_duration_sec,
         augmenter=augmenter,
@@ -604,6 +769,7 @@ def main() -> None:
     valid_preprocess = make_preprocess_function(
         feature_extractor=feature_extractor,
         str_to_int=str_to_int,
+        speaker_to_int=speaker_to_int,
         input_features_key=input_features_key,
         max_duration_sec=cfg.max_duration_sec,
         augmenter=None,
@@ -642,7 +808,17 @@ def main() -> None:
         if hasattr(model_config, "feat_proj_dropout"):
             model_config.feat_proj_dropout = cfg.feat_proj_dropout
 
-    model = AutoModelForAudioClassification.from_pretrained(cfg.model_id, config=model_config)
+    if cfg.enable_dann:
+        if speaker_to_int is None:
+            raise ValueError("DANN is enabled but speaker mapping is unavailable.")
+        model = DANNForAudioClassification(
+            model_id=cfg.model_id,
+            num_labels=num_labels,
+            num_speakers=len(speaker_to_int),
+            speaker_head_dropout=cfg.dann_speaker_head_dropout,
+        )
+    else:
+        model = AutoModelForAudioClassification.from_pretrained(cfg.model_id, config=model_config)
     data_collator = AudioDataCollator(feature_extractor, input_features_key)
     compute_metrics = make_compute_metrics(int_to_str)
 
@@ -652,6 +828,7 @@ def main() -> None:
 
     training_args = build_training_arguments(cfg, run_dir, report_to)
     trainer = build_trainer(
+        cfg=cfg,
         model=model,
         training_args=training_args,
         train_dataset=train_ds_encoded,
