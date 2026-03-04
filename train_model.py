@@ -16,7 +16,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from datasets import Audio, load_dataset
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from torch.utils.data import DataLoader
 from transformers import (
     AutoConfig,
     AutoFeatureExtractor,
@@ -83,6 +85,12 @@ class TrainConfig:
     save_confusion_matrix_csv: bool = True
     save_confusion_matrix_png: bool = True
     save_per_language_csv: bool = True
+    run_tsne: bool = False
+    tsne_max_samples: int = 2200
+    tsne_batch_size: int = 8
+    tsne_perplexity: float = 30.0
+    tsne_random_state: int = 42
+    tsne_speaker_top_k: int = 12
     run_speaker_diagnostic: bool = True
     speaker_overlap_warn_ratio: float = 0.2
     speaker_seen_gap_warn: float = 0.10
@@ -438,6 +446,230 @@ def make_compute_metrics(int_to_str: Dict[int, str]):
         return metrics
 
     return compute_metrics
+
+
+def pool_sequence_representation(
+    last_hidden_state: torch.Tensor,
+    attention_mask: Optional[torch.Tensor],
+) -> torch.Tensor:
+    if last_hidden_state.ndim != 3:
+        return last_hidden_state
+    if attention_mask is None:
+        return last_hidden_state.mean(dim=1)
+
+    mask = attention_mask.to(last_hidden_state.device).float()
+    if mask.shape[1] != last_hidden_state.shape[1]:
+        return last_hidden_state.mean(dim=1)
+
+    denom = mask.sum(dim=1, keepdim=True).clamp_min(1.0)
+    masked = last_hidden_state * mask.unsqueeze(-1)
+    return masked.sum(dim=1) / denom
+
+
+def extract_last_layer_representations(
+    *,
+    model,
+    dataset_encoded,
+    data_collator,
+    batch_size: int,
+) -> np.ndarray:
+    dataloader = DataLoader(
+        dataset_encoded,
+        batch_size=max(1, batch_size),
+        shuffle=False,
+        collate_fn=data_collator,
+    )
+
+    model_was_training = model.training
+    model.eval()
+
+    device = next(model.parameters()).device
+    all_repr: List[np.ndarray] = []
+    is_dann_model = hasattr(model, "encoder") and hasattr(model, "_pool")
+
+    with torch.no_grad():
+        for batch in dataloader:
+            batch.pop("labels", None)
+            batch.pop("speaker_labels", None)
+            batch = {k: v.to(device) for k, v in batch.items()}
+            attention_mask = batch.get("attention_mask")
+
+            if is_dann_model:
+                encoder_inputs: Dict[str, torch.Tensor] = {}
+                if "input_values" in batch:
+                    encoder_inputs["input_values"] = batch["input_values"]
+                if "input_features" in batch:
+                    encoder_inputs["input_features"] = batch["input_features"]
+                if attention_mask is not None:
+                    encoder_inputs["attention_mask"] = attention_mask
+
+                try:
+                    encoder_outputs = model.encoder(**encoder_inputs, output_hidden_states=True)
+                except TypeError:
+                    encoder_outputs = model.encoder(**encoder_inputs)
+
+                hidden_states = getattr(encoder_outputs, "hidden_states", None)
+                if hidden_states is not None and len(hidden_states) > 0:
+                    last_hidden = hidden_states[-1]
+                elif hasattr(encoder_outputs, "last_hidden_state") and encoder_outputs.last_hidden_state is not None:
+                    last_hidden = encoder_outputs.last_hidden_state
+                else:
+                    last_hidden = encoder_outputs[0]
+
+                pooled = model._pool(last_hidden, attention_mask)
+            else:
+                try:
+                    outputs = model(**batch, output_hidden_states=True)
+                except TypeError:
+                    outputs = model(**batch)
+
+                hidden_states = getattr(outputs, "hidden_states", None)
+                if hidden_states is None and isinstance(outputs, tuple) and len(outputs) > 1:
+                    hidden_states = outputs[1]
+                if hidden_states is None:
+                    raise RuntimeError(
+                        "Could not access hidden states for t-SNE. "
+                        "Ensure the model forward supports output_hidden_states."
+                    )
+
+                last_hidden = hidden_states[-1]
+                pooled = pool_sequence_representation(last_hidden, attention_mask)
+
+            all_repr.append(pooled.detach().cpu().numpy())
+
+    if model_was_training:
+        model.train()
+
+    return np.concatenate(all_repr, axis=0) if all_repr else np.empty((0, 0), dtype=np.float32)
+
+
+def sample_indices_for_tsne(
+    *,
+    languages: List[str],
+    max_samples: int,
+    seed: int,
+) -> np.ndarray:
+    n = len(languages)
+    if max_samples <= 0 or n <= max_samples:
+        return np.arange(n, dtype=np.int64)
+
+    rng = np.random.default_rng(seed)
+    labels = np.asarray(languages)
+    unique = sorted(set(languages))
+    selected: List[int] = []
+
+    quota = max(1, max_samples // max(1, len(unique)))
+    for label in unique:
+        label_idx = np.where(labels == label)[0]
+        take = min(len(label_idx), quota)
+        if take > 0:
+            picked = rng.choice(label_idx, size=take, replace=False)
+            selected.extend(picked.tolist())
+
+    if len(selected) < max_samples:
+        remaining = np.setdiff1d(np.arange(n, dtype=np.int64), np.array(selected, dtype=np.int64), assume_unique=False)
+        extra_take = min(len(remaining), max_samples - len(selected))
+        if extra_take > 0:
+            picked_extra = rng.choice(remaining, size=extra_take, replace=False)
+            selected.extend(picked_extra.tolist())
+
+    selected = sorted(set(selected))
+    return np.array(selected[:max_samples], dtype=np.int64)
+
+
+def run_tsne_and_save(
+    *,
+    representations: np.ndarray,
+    languages: List[str],
+    speaker_ids: List[str],
+    output_dir: Path,
+    cfg: TrainConfig,
+) -> None:
+    if representations.size == 0:
+        print("t-SNE skipped: empty representation tensor.")
+        return
+
+    indices = sample_indices_for_tsne(
+        languages=languages,
+        max_samples=cfg.tsne_max_samples,
+        seed=cfg.tsne_random_state,
+    )
+
+    reps = representations[indices]
+    langs = [languages[i] for i in indices]
+    speakers = [str(speaker_ids[i]) for i in indices]
+
+    max_perplexity = max(5.0, float((len(indices) - 1) // 3))
+    perplexity = min(float(cfg.tsne_perplexity), max_perplexity)
+    if perplexity < 5.0:
+        print("t-SNE skipped: not enough samples for stable projection.")
+        return
+
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        init="pca",
+        learning_rate="auto",
+        random_state=cfg.tsne_random_state,
+    )
+    coords = tsne.fit_transform(reps)
+
+    output_csv = output_dir / "tsne_validation_points.csv"
+    rows = []
+    for i, (x, y) in enumerate(coords.tolist()):
+        rows.append(
+            {
+                "x": float(x),
+                "y": float(y),
+                "language": langs[i],
+                "speaker_id": speakers[i],
+            }
+        )
+    write_rows_csv(output_csv, rows, ["x", "y", "language", "speaker_id"])
+    print(f"Saved t-SNE points CSV: {output_csv}")
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    unique_langs = sorted(set(langs))
+    cmap = plt.cm.get_cmap("tab20", max(20, len(unique_langs)))
+    for i, lang in enumerate(unique_langs):
+        mask = np.array([x == lang for x in langs], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=9, alpha=0.75, color=cmap(i), label=lang)
+    ax.set_title("t-SNE (Validation Last-Layer) - Color by Language")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=7, ncol=3, loc="best")
+    fig.tight_layout()
+    lang_png = output_dir / "tsne_validation_by_language.png"
+    fig.savefig(lang_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE language plot: {lang_png}")
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    speaker_counts: Dict[str, int] = {}
+    for s in speakers:
+        speaker_counts[s] = speaker_counts.get(s, 0) + 1
+    top_speakers = [s for s, _ in sorted(speaker_counts.items(), key=lambda x: x[1], reverse=True)[: cfg.tsne_speaker_top_k]]
+
+    other_mask = np.array([s not in top_speakers for s in speakers], dtype=bool)
+    if np.any(other_mask):
+        ax.scatter(coords[other_mask, 0], coords[other_mask, 1], s=8, alpha=0.25, color="lightgray", label="other")
+
+    cmap_spk = plt.cm.get_cmap("tab20", max(20, len(top_speakers)))
+    for i, spk in enumerate(top_speakers):
+        mask = np.array([x == spk for x in speakers], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=10, alpha=0.85, color=cmap_spk(i), label=spk)
+
+    ax.set_title(f"t-SNE (Validation Last-Layer) - Color by Speaker (Top {len(top_speakers)})")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=6, ncol=2, loc="best")
+    fig.tight_layout()
+    spk_png = output_dir / "tsne_validation_by_speaker_topk.png"
+    fig.savefig(spk_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE speaker plot: {spk_png}")
 
 
 def write_confusion_matrix_csv(path: Path, cm: np.ndarray, label_names: List[str]) -> None:
@@ -890,6 +1122,25 @@ def main() -> None:
             cfg=cfg,
             output_dir=diagnostics_dir,
         )
+
+    if cfg.run_tsne:
+        try:
+            print("t-SNE export starting (validation last-layer representations)...")
+            representations = extract_last_layer_representations(
+                model=trainer.model,
+                dataset_encoded=valid_ds_encoded,
+                data_collator=data_collator,
+                batch_size=cfg.tsne_batch_size,
+            )
+            run_tsne_and_save(
+                representations=representations,
+                languages=[str(x) for x in valid_ds_encoded["language"]],
+                speaker_ids=[str(x) for x in valid_ds_encoded["speaker_id"]],
+                output_dir=diagnostics_dir,
+                cfg=cfg,
+            )
+        except Exception as exc:
+            print(f"Warning: t-SNE export failed and was skipped: {exc}")
 
     if wandb_enabled and wandb is not None:
         wandb.finish()

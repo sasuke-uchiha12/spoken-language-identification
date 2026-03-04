@@ -117,6 +117,7 @@ def configure_mac_profile() -> None:
     cfg.dann_grl_lambda = 1.0
     cfg.dann_use_lambda_schedule = True
     cfg.dann_speaker_head_dropout = 0.1
+    cfg.run_tsne = True
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps
