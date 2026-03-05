@@ -71,13 +71,13 @@ Interpretation:
 Confusion matrix visual evidence:
 
 Baseline:
-![](figures/confusion_matrix_baseline.png)
+<img src="figures/confusion_matrix_baseline.png" alt="Baseline confusion matrix" style="max-width: 680px; width: 100%; height: auto;" />
 
 Mitigation 1:
-![](figures/confusion_matrix_mitigation1.png)
+<img src="figures/confusion_matrix_mitigation1.png" alt="Mitigation 1 confusion matrix" style="max-width: 680px; width: 100%; height: auto;" />
 
 Improved (DANN):
-![](figures/confusion_matrix_improved.png)
+<img src="figures/confusion_matrix_improved.png" alt="Improved confusion matrix" style="max-width: 680px; width: 100%; height: auto;" />
 
 Top-10 confusion table (baseline):
 
@@ -141,10 +141,10 @@ Reason baseline t-SNE is unavailable:
 Improved run t-SNE (DANN):
 
 By language:
-![](figures/tsne_improved_by_language.png)
+<img src="figures/tsne_improved_by_language.png" alt="Improved t-SNE by language" style="max-width: 680px; width: 100%; height: auto;" />
 
 By speaker (top-K speakers):
-![](figures/tsne_improved_by_speaker.png)
+<img src="figures/tsne_improved_by_speaker.png" alt="Improved t-SNE by speaker" style="max-width: 680px; width: 100%; height: auto;" />
 
 Interpretation from available t-SNE evidence:
 - Language coloring shows partial language structure, but not perfectly separated clusters.
