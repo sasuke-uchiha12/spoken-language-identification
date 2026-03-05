@@ -105,13 +105,13 @@ def configure_mac_profile() -> None:
     cfg.eval_steps = 100
     cfg.save_steps = 100
 
-    # Task 2 DANN run 1: keep augmentation OFF to isolate DANN effect.
-    cfg.enable_train_augmentation = False
-    cfg.augmentation_prob = 0.28
-    cfg.speed_min = 0.975
-    cfg.speed_max = 1.025
+    # Task 2 combined run: DANN + Mitigation 1 train-only augmentation.
+    cfg.enable_train_augmentation = True
+    cfg.augmentation_prob = 0.30
+    cfg.speed_min = 0.97
+    cfg.speed_max = 1.03
     cfg.noise_std_min = 0.0005
-    cfg.noise_std_max = 0.0018
+    cfg.noise_std_max = 0.002
 
     # Optional Task 2 model-based mitigation (DANN).
     cfg.enable_dann = True
