@@ -526,6 +526,14 @@ def main() -> None:
     tsne_missing = [r.key for r in RUNS if r.key not in tsne_map]
 
     speaker_map = {row["run_key"]: row for row in speaker_rows}
+    bu_unseen = float(speaker_map["baseline_untuned"]["accuracy_unseen_speakers"])
+    d_unseen = float(speaker_map["improved_dann"]["accuracy_unseen_speakers"])
+    tr_unseen = float(speaker_map["tuned_ref"]["accuracy_unseen_speakers"])
+    m1_unseen = float(speaker_map["mitigation1"]["accuracy_unseen_speakers"])
+    bu_sindhi_punjabi = conf_by_run["baseline_untuned"].get(("sindhi", "punjabi"), 0)
+    d_sindhi_punjabi = conf_by_run["improved_dann"].get(("sindhi", "punjabi"), 0)
+    bu_hindi_urdu = conf_by_run["baseline_untuned"].get(("hindi", "urdu"), 0)
+    d_hindi_urdu = conf_by_run["improved_dann"].get(("hindi", "urdu"), 0)
 
     run_id_map = {r.key: r.run_id for r in RUNS}
     conf_img_lines: List[str] = []
@@ -614,6 +622,20 @@ Observed outcome summary:
 - DANN improves over tuned reference by accuracy **{fmt(d['eval_accuracy'] - tr['eval_accuracy'])}** and macro-F1 **{fmt(d['eval_macro_f1'] - tr['eval_macro_f1'])}**.
 - DANN improves over Mitigation 1 by accuracy **{fmt(d['eval_accuracy'] - m1['eval_accuracy'])}** and macro-F1 **{fmt(d['eval_macro_f1'] - m1['eval_macro_f1'])}**.
 - Eval loss is also lower in DANN, indicating better fit without needing retraining here.
+
+How the proposed technique addresses speaker bias:
+
+- Data-centric mitigation (speed/noise/pitch/spectral augmentation in intermediate runs) increases speaker/acoustic variability so the model cannot rely on one speaker style.
+- DANN adds an adversarial speaker head with gradient reversal, which penalizes speaker-identifiable representations while preserving language-discriminative signal in the shared encoder.
+- Together, this directly targets the shortcut path: language prediction from speaker-correlated cues.
+
+Speaker-bias-specific evidence of success extent:
+
+- Unseen-speaker accuracy improves from baseline **{fmt(bu_unseen)}** to DANN **{fmt(d_unseen)}** (delta **{fmt(d_unseen - bu_unseen)}**), and also exceeds tuned reference (**{fmt(tr_unseen)}**) and Mitigation 1 (**{fmt(m1_unseen)}**).
+- Key confusion pairs tied to shortcut risk are reduced:
+  - `sindhi->punjabi`: {bu_sindhi_punjabi} -> {d_sindhi_punjabi} (delta {d_sindhi_punjabi - bu_sindhi_punjabi})
+  - `hindi->urdu`: {bu_hindi_urdu} -> {d_hindi_urdu} (delta {d_hindi_urdu - bu_hindi_urdu})
+- This is a partial, not absolute, success: some strong-language classes still regress while hard classes improve.
 
 ### Intermediate Mitigation Evidence (M2, 3A, 4)
 

@@ -57,6 +57,20 @@ Observed outcome summary:
 - DANN improves over Mitigation 1 by accuracy **0.0188** and macro-F1 **0.0558**.
 - Eval loss is also lower in DANN, indicating better fit without needing retraining here.
 
+How the proposed technique addresses speaker bias:
+
+- Data-centric mitigation (speed/noise/pitch/spectral augmentation in intermediate runs) increases speaker/acoustic variability so the model cannot rely on one speaker style.
+- DANN adds an adversarial speaker head with gradient reversal, which penalizes speaker-identifiable representations while preserving language-discriminative signal in the shared encoder.
+- Together, this directly targets the shortcut path: language prediction from speaker-correlated cues.
+
+Speaker-bias-specific evidence of success extent:
+
+- Unseen-speaker accuracy improves from baseline **0.4676** to DANN **0.5576** (delta **0.0900**), and also exceeds tuned reference (**0.5270**) and Mitigation 1 (**0.5388**).
+- Key confusion pairs tied to shortcut risk are reduced:
+  - `sindhi->punjabi`: 79 -> 14 (delta -65)
+  - `hindi->urdu`: 60 -> 39 (delta -21)
+- This is a partial, not absolute, success: some strong-language classes still regress while hard classes improve.
+
 ### Intermediate Mitigation Evidence (M2, 3A, 4)
 
 Intermediate mitigation runs are used as ablation/sensitivity evidence and are not discarded.
