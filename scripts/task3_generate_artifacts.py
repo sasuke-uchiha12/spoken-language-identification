@@ -556,11 +556,31 @@ def main() -> None:
 
     report_md = f"""# Task 3: Model Analysis (Baseline vs Improved, with Mitigation-1 Bridge)
 
-## 1. Problem Bias Source
+## 1. Discuss the source of the bias in the data and explain why learning from biased data is difficult.
 
-The dataset has limited speakers per language in training, which encourages a shortcut: the model can partially rely on speaker characteristics instead of language-discriminative cues. This is difficult because speaker timbre/prosody can dominate representation learning and create brittle language boundaries for unseen voices.
+The bias source is a **small-speaker training regime per language**, which encourages shortcut learning.  
+Empirically, this appears as unstable language discrimination in weaker classes and persistent cross-language confusions.
 
-## 2. Proposed Technique and Success Extent
+Evidence from this project:
+
+- Speaker setup shows limited training speaker diversity (`train_unique_speakers=110`) with many validation speakers (`validation_unique_speakers=681`), and all validation samples are unseen speakers (`validation_samples_unseen_speakers=3300`).  
+  This setup is realistic for generalization, but it also makes language-vs-speaker disentanglement difficult.
+- In the untuned baseline, several classes are near-zero (`maithili=0.0000`, `konkani=0.0000`, `hindi=0.0200`, `sindhi=0.0333`, `santali=0.0600`), indicating weak language boundaries for minority/hard classes.
+- Baseline confusion is concentrated in recurring pairs (`konkani->marathi=106`, `sindhi->punjabi=79`, `hindi->urdu=60`), which is consistent with learned shortcut behavior and overlap in acoustic/prosodic cues.
+
+Why this is hard:
+
+- Speaker characteristics (timbre, pitch range, recording style) can dominate gradients early in training.
+- With limited speaker diversity per language, the model can minimize loss using speaker-correlated cues instead of robust language cues.
+- This leads to brittle decision boundaries that transfer poorly to difficult classes and confusion-heavy language pairs.
+
+References:
+
+- `reports/tables/task3_speaker_summary.csv`
+- `reports/tables/task3_per_language_delta.csv`
+- `reports/tables/task3_confusion_top_pairs.csv`
+
+## 2. Discuss your proposed technique and how it addresses the speaker bias problem. To what extent was the solution successful?
 
 Primary required comparison:
 
@@ -593,7 +613,7 @@ Observed outcome summary:
 - DANN improves over Mitigation 1 by accuracy **{fmt(d['eval_accuracy'] - m1['eval_accuracy'])}** and macro-F1 **{fmt(d['eval_macro_f1'] - m1['eval_macro_f1'])}**.
 - Eval loss is also lower in DANN, indicating better fit without needing retraining here.
 
-## 3. Confusion Pattern Analysis
+## 3. Analyze the confusion patterns between languages. Which languages are most often confused with each other? why?
 
 Tracked high-impact confusion pairs:
 
@@ -641,7 +661,7 @@ Confusion matrix visuals:
 
 """ + "\n".join(conf_img_lines) + f"""
 
-## 4. Last-Layer Representation Analysis (t-SNE)
+## 4. Analyze the baseline and the improved model by visualization the representations of the last layer using the TSNE algorithm. Discuss whether or not the models encode the speaker identity.
 
 t-SNE settings target: `max_samples=2200`, `perplexity=30`, `seed=42`, `speaker_top_k=12`.
 
@@ -668,7 +688,7 @@ t-SNE visuals:
 
 """ + "\n".join(tsne_img_lines) + f"""
 
-## 5. Do Models Encode Speaker Identity?
+### Speaker-Identity Encoding Discussion
 
 Speaker diagnostics (`overlap_speaker_count=0`, no warnings) show clean split integrity across runs.
 
@@ -681,7 +701,7 @@ Unseen-speaker accuracy:
 
 Conclusion: the models still encode some speaker information (non-zero speaker structure in embedding space), but DANN improves language-discriminative behavior and unseen-speaker performance compared with the baseline chain.
 
-## 6. Final Takeaways
+## 5. Any other analyses you find insightful for your model.
 
 1. Bias source is real: small-speaker regime encourages speaker shortcut learning.
 2. Data-centric mitigation helps but remains partial.
