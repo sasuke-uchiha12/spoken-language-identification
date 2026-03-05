@@ -1,0 +1,5 @@
+run_key,run_label,run_id,train_unique_speakers,validation_unique_speakers,overlap_speaker_count,overlap_ratio_validation_speakers,validation_samples_seen_speakers,validation_samples_unseen_speakers,accuracy_seen_speakers,accuracy_unseen_speakers,warnings_count,warnings
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,110,681,0,0.0,0,3300,,0.4675757575757576,0,
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,110,681,0,0.0,0,3300,,0.526969696969697,0,
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,110,681,0,0.0,0,3300,,0.5387878787878788,0,
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,110,681,0,0.0,0,3300,,0.5575757575757576,0,
