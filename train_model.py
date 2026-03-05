@@ -873,6 +873,10 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+    # Ensure eval/predict metrics are computed against language labels.
+    # DANN still consumes `speaker_labels` inside custom compute_loss.
+    if "label_names" in ta_sig:
+        kwargs["label_names"] = ["labels"]
 
     if cfg.max_grad_norm is not None:
         if "max_grad_norm" in ta_sig:
@@ -1116,6 +1120,8 @@ def main() -> None:
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+    # Hard-guard for DANN runs: metrics must use language labels, not speaker_labels.
+    trainer.label_names = ["labels"]
 
     print("Train loop starting...")
     train_result = trainer.train()

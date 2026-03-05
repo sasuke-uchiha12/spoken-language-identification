@@ -64,6 +64,8 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+    if "label_names" in ta_sig:
+        kwargs["label_names"] = ["labels"]
 
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
