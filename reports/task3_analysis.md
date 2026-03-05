@@ -104,6 +104,13 @@ Top confusion trend:
 - DANN reduces several major confusions strongly (for example `sindhi->punjabi`, `hindi->urdu`, `konkani->marathi`).
 - Some confusion remains structurally hard (`konkani->marathi` still high), likely due acoustic/prosodic similarity and class overlap effects.
 
+Why these pairs are frequently confused (pair-specific reasoning):
+
+- `hindi->urdu`: close phonetic/prosodic profile and substantial lexical overlap in conversational speech make boundary cues weak in short utterances.
+- `konkani->marathi`: strong regional/contact similarity and overlapping speaking styles; when class evidence is weak, the model tends to collapse toward marathi.
+- `sindhi->punjabi`: partial prosodic overlap plus uneven class difficulty can cause decision drift toward punjabi in ambiguous clips.
+- `odia->bengali` and `santali->bengali`: neighboring-language acoustic proximity and shared broadcast/recording conditions can amplify confusion under limited speaker diversity.
+
 Language-wise gains (untuned baseline -> DANN) include classes that were historically weak:
 
 - `sindhi`: 0.0333 -> 0.5000 (delta 0.4667)
@@ -195,8 +202,52 @@ Conclusion: the models still encode some speaker information (non-zero speaker s
 
 ## 5. Any other analyses you find insightful for your model.
 
-1. Bias source is real: small-speaker regime encourages speaker shortcut learning.
-2. Data-centric mitigation helps but remains partial.
-3. DANN provides the strongest overall improvement in this branch.
-4. Confusion analysis and t-SNE both show progress plus remaining hard language pairs.
-5. Speaker bias mitigation is improved, not absolutely solved; this calibrated claim is the most defensible for Task 3.
+### A) Class-balance profile across runs
+
+| Run | Mean per-language acc | Median | Min | Max | #classes < 0.10 | #classes >= 0.80 |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline (untuned) | 0.4676 | 0.6633 | 0.0000 | 0.8267 | 5 | 1 |
+| Tuned ref | 0.5270 | 0.6700 | 0.0000 | 0.8800 | 4 | 5 |
+| Mitigation 1 | 0.5388 | 0.6633 | 0.0000 | 0.8667 | 4 | 6 |
+| DANN | 0.5576 | 0.5600 | 0.0800 | 0.9067 | 1 | 4 |
+
+### B) Weak-class recovery index
+
+Weak classes are defined from the untuned baseline as languages with accuracy `< 0.10`: `hindi, konkani, maithili, santali, sindhi`.
+
+| Run | Mean accuracy on weak-class set |
+|---|---:|
+| Baseline (untuned) | 0.0227 |
+| Tuned ref | 0.0573 |
+| Mitigation 1 | 0.0840 |
+| DANN | 0.3547 |
+
+Weak-class mean gain:
+
+- Tuned ref vs baseline: 0.0347
+- Mitigation 1 vs baseline: 0.0613
+- DANN vs baseline: 0.3320
+
+### C) Error concentration analysis (off-diagonal confusion mass)
+
+Top-5 confusion mass ratio = `sum(top5 off-diagonal counts) / sum(all off-diagonal counts)`.
+
+| Run | Top-5 off-diagonal errors | Total off-diagonal errors | Top-5 mass ratio |
+|---|---:|---:|---:|
+| Baseline (untuned) | 352 | 1757 | 0.2003 |
+| Tuned ref | 392 | 1561 | 0.2511 |
+| Mitigation 1 | 396 | 1522 | 0.2602 |
+| DANN | 235 | 1460 | 0.1610 |
+
+Interpretation: lower ratio means errors are less concentrated in a few dominant failure modes.
+
+### D) Checkpoint timing stability
+
+| Run | Best step | Final step | Best-step ratio |
+|---|---:|---:|---:|
+| Baseline (untuned) | 6200 | 6519 | 0.9511 |
+| Tuned ref | 6000 | 6519 | 0.9204 |
+| Mitigation 1 | 5800 | 6519 | 0.8897 |
+| DANN | 6500 | 6519 | 0.9971 |
+
+Interpretation: best-step ratios near the end indicate late-epoch stabilization/plateau behavior; this supports best-checkpoint selection over last-checkpoint reporting.

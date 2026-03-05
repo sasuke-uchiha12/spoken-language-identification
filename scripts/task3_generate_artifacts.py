@@ -87,6 +87,39 @@ def top_confusions(conf: Dict[Tuple[str, str], int], n: int = 10) -> List[Tuple[
     return pairs[:n]
 
 
+def confusion_concentration(conf: Dict[Tuple[str, str], int], top_n: int = 5) -> Dict[str, float]:
+    vals = sorted((v for v in conf.values() if v > 0), reverse=True)
+    total = int(sum(vals))
+    top_mass = int(sum(vals[:top_n]))
+    ratio = (float(top_mass) / float(total)) if total > 0 else float("nan")
+    return {
+        "total_offdiag_errors": total,
+        "topn_offdiag_errors": top_mass,
+        "topn_error_ratio": ratio,
+    }
+
+
+def per_language_distribution_stats(per_lang_acc: Dict[str, float]) -> Dict[str, float]:
+    vals = np.asarray(list(per_lang_acc.values()), dtype=np.float64)
+    if vals.size == 0:
+        return {
+            "mean": float("nan"),
+            "median": float("nan"),
+            "min": float("nan"),
+            "max": float("nan"),
+            "low_count_lt_0_1": float("nan"),
+            "high_count_ge_0_8": float("nan"),
+        }
+    return {
+        "mean": float(np.mean(vals)),
+        "median": float(np.median(vals)),
+        "min": float(np.min(vals)),
+        "max": float(np.max(vals)),
+        "low_count_lt_0_1": int(np.sum(vals < 0.1)),
+        "high_count_ge_0_8": int(np.sum(vals >= 0.8)),
+    }
+
+
 def load_tsne_points(path: Path) -> Tuple[np.ndarray, List[str], List[str]]:
     coords: List[List[float]] = []
     langs: List[str] = []
@@ -252,6 +285,11 @@ def main() -> None:
         eval_res = read_json(eval_path)
         trainer_state = read_json(trainer_state_path)
         best_ckpt = str(trainer_state.get("best_model_checkpoint", ""))
+        best_global_step = trainer_state.get("best_global_step")
+        final_global_step = trainer_state.get("global_step")
+        best_step_ratio = None
+        if isinstance(best_global_step, (int, float)) and isinstance(final_global_step, (int, float)) and final_global_step:
+            best_step_ratio = float(best_global_step) / float(final_global_step)
         metrics_rows.append(
             {
                 "run_key": run.key,
@@ -260,7 +298,9 @@ def main() -> None:
                 "eval_accuracy": eval_res["eval_accuracy"],
                 "eval_macro_f1": eval_res["eval_macro_f1"],
                 "eval_loss": eval_res["eval_loss"],
-                "best_global_step": trainer_state.get("best_global_step"),
+                "best_global_step": best_global_step,
+                "final_global_step": final_global_step,
+                "best_step_ratio": best_step_ratio,
                 "best_metric": trainer_state.get("best_metric"),
                 "best_model_checkpoint": Path(best_ckpt).name if best_ckpt else "",
             }
@@ -347,6 +387,8 @@ def main() -> None:
             "eval_macro_f1",
             "eval_loss",
             "best_global_step",
+            "final_global_step",
+            "best_step_ratio",
             "best_metric",
             "best_model_checkpoint",
         ],
@@ -534,6 +576,19 @@ def main() -> None:
     d_sindhi_punjabi = conf_by_run["improved_dann"].get(("sindhi", "punjabi"), 0)
     bu_hindi_urdu = conf_by_run["baseline_untuned"].get(("hindi", "urdu"), 0)
     d_hindi_urdu = conf_by_run["improved_dann"].get(("hindi", "urdu"), 0)
+    lang_stats = {k: per_language_distribution_stats(v) for k, v in per_lang_by_run.items()}
+    weak_classes = sorted([lang for lang, acc in per_lang_by_run["baseline_untuned"].items() if acc < 0.1])
+    weak_mean_bu = (
+        float(np.mean([per_lang_by_run["baseline_untuned"][lang] for lang in weak_classes])) if weak_classes else float("nan")
+    )
+    weak_mean_tr = float(np.mean([per_lang_by_run["tuned_ref"][lang] for lang in weak_classes])) if weak_classes else float("nan")
+    weak_mean_m1 = (
+        float(np.mean([per_lang_by_run["mitigation1"][lang] for lang in weak_classes])) if weak_classes else float("nan")
+    )
+    weak_mean_d = (
+        float(np.mean([per_lang_by_run["improved_dann"][lang] for lang in weak_classes])) if weak_classes else float("nan")
+    )
+    conf_conc = {k: confusion_concentration(v, top_n=5) for k, v in conf_by_run.items()}
 
     run_id_map = {r.key: r.run_id for r in RUNS}
     conf_img_lines: List[str] = []
@@ -667,6 +722,13 @@ Top confusion trend:
 - DANN reduces several major confusions strongly (for example `sindhi->punjabi`, `hindi->urdu`, `konkani->marathi`).
 - Some confusion remains structurally hard (`konkani->marathi` still high), likely due acoustic/prosodic similarity and class overlap effects.
 
+Why these pairs are frequently confused (pair-specific reasoning):
+
+- `hindi->urdu`: close phonetic/prosodic profile and substantial lexical overlap in conversational speech make boundary cues weak in short utterances.
+- `konkani->marathi`: strong regional/contact similarity and overlapping speaking styles; when class evidence is weak, the model tends to collapse toward marathi.
+- `sindhi->punjabi`: partial prosodic overlap plus uneven class difficulty can cause decision drift toward punjabi in ambiguous clips.
+- `odia->bengali` and `santali->bengali`: neighboring-language acoustic proximity and shared broadcast/recording conditions can amplify confusion under limited speaker diversity.
+
 Language-wise gains (untuned baseline -> DANN) include classes that were historically weak:
 
 """ + "\n".join(
@@ -741,11 +803,55 @@ Conclusion: the models still encode some speaker information (non-zero speaker s
 
 ## 5. Any other analyses you find insightful for your model.
 
-1. Bias source is real: small-speaker regime encourages speaker shortcut learning.
-2. Data-centric mitigation helps but remains partial.
-3. DANN provides the strongest overall improvement in this branch.
-4. Confusion analysis and t-SNE both show progress plus remaining hard language pairs.
-5. Speaker bias mitigation is improved, not absolutely solved; this calibrated claim is the most defensible for Task 3.
+### A) Class-balance profile across runs
+
+| Run | Mean per-language acc | Median | Min | Max | #classes < 0.10 | #classes >= 0.80 |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline (untuned) | {fmt(lang_stats['baseline_untuned']['mean'])} | {fmt(lang_stats['baseline_untuned']['median'])} | {fmt(lang_stats['baseline_untuned']['min'])} | {fmt(lang_stats['baseline_untuned']['max'])} | {lang_stats['baseline_untuned']['low_count_lt_0_1']} | {lang_stats['baseline_untuned']['high_count_ge_0_8']} |
+| Tuned ref | {fmt(lang_stats['tuned_ref']['mean'])} | {fmt(lang_stats['tuned_ref']['median'])} | {fmt(lang_stats['tuned_ref']['min'])} | {fmt(lang_stats['tuned_ref']['max'])} | {lang_stats['tuned_ref']['low_count_lt_0_1']} | {lang_stats['tuned_ref']['high_count_ge_0_8']} |
+| Mitigation 1 | {fmt(lang_stats['mitigation1']['mean'])} | {fmt(lang_stats['mitigation1']['median'])} | {fmt(lang_stats['mitigation1']['min'])} | {fmt(lang_stats['mitigation1']['max'])} | {lang_stats['mitigation1']['low_count_lt_0_1']} | {lang_stats['mitigation1']['high_count_ge_0_8']} |
+| DANN | {fmt(lang_stats['improved_dann']['mean'])} | {fmt(lang_stats['improved_dann']['median'])} | {fmt(lang_stats['improved_dann']['min'])} | {fmt(lang_stats['improved_dann']['max'])} | {lang_stats['improved_dann']['low_count_lt_0_1']} | {lang_stats['improved_dann']['high_count_ge_0_8']} |
+
+### B) Weak-class recovery index
+
+Weak classes are defined from the untuned baseline as languages with accuracy `< 0.10`: `{", ".join(weak_classes) if weak_classes else "none"}`.
+
+| Run | Mean accuracy on weak-class set |
+|---|---:|
+| Baseline (untuned) | {fmt(weak_mean_bu)} |
+| Tuned ref | {fmt(weak_mean_tr)} |
+| Mitigation 1 | {fmt(weak_mean_m1)} |
+| DANN | {fmt(weak_mean_d)} |
+
+Weak-class mean gain:
+
+- Tuned ref vs baseline: {fmt(weak_mean_tr - weak_mean_bu)}
+- Mitigation 1 vs baseline: {fmt(weak_mean_m1 - weak_mean_bu)}
+- DANN vs baseline: {fmt(weak_mean_d - weak_mean_bu)}
+
+### C) Error concentration analysis (off-diagonal confusion mass)
+
+Top-5 confusion mass ratio = `sum(top5 off-diagonal counts) / sum(all off-diagonal counts)`.
+
+| Run | Top-5 off-diagonal errors | Total off-diagonal errors | Top-5 mass ratio |
+|---|---:|---:|---:|
+| Baseline (untuned) | {conf_conc['baseline_untuned']['topn_offdiag_errors']} | {conf_conc['baseline_untuned']['total_offdiag_errors']} | {fmt(conf_conc['baseline_untuned']['topn_error_ratio'])} |
+| Tuned ref | {conf_conc['tuned_ref']['topn_offdiag_errors']} | {conf_conc['tuned_ref']['total_offdiag_errors']} | {fmt(conf_conc['tuned_ref']['topn_error_ratio'])} |
+| Mitigation 1 | {conf_conc['mitigation1']['topn_offdiag_errors']} | {conf_conc['mitigation1']['total_offdiag_errors']} | {fmt(conf_conc['mitigation1']['topn_error_ratio'])} |
+| DANN | {conf_conc['improved_dann']['topn_offdiag_errors']} | {conf_conc['improved_dann']['total_offdiag_errors']} | {fmt(conf_conc['improved_dann']['topn_error_ratio'])} |
+
+Interpretation: lower ratio means errors are less concentrated in a few dominant failure modes.
+
+### D) Checkpoint timing stability
+
+| Run | Best step | Final step | Best-step ratio |
+|---|---:|---:|---:|
+| Baseline (untuned) | {bu.get('best_global_step')} | {bu.get('final_global_step')} | {fmt(bu.get('best_step_ratio'))} |
+| Tuned ref | {tr.get('best_global_step')} | {tr.get('final_global_step')} | {fmt(tr.get('best_step_ratio'))} |
+| Mitigation 1 | {m1.get('best_global_step')} | {m1.get('final_global_step')} | {fmt(m1.get('best_step_ratio'))} |
+| DANN | {d.get('best_global_step')} | {d.get('final_global_step')} | {fmt(d.get('best_step_ratio'))} |
+
+Interpretation: best-step ratios near the end indicate late-epoch stabilization/plateau behavior; this supports best-checkpoint selection over last-checkpoint reporting.
 """
 
     task3_report_path = reports_dir / "task3_analysis.md"
