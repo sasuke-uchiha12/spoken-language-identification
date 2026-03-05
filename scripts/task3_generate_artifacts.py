@@ -625,9 +625,11 @@ Observed outcome summary:
 
 How the proposed technique addresses speaker bias:
 
-- Data-centric mitigation (speed/noise/pitch/spectral augmentation in intermediate runs) increases speaker/acoustic variability so the model cannot rely on one speaker style.
+- We tested multiple data-centric variants; they did not perform equally.
+- Mitigation 1 was the strongest data-centric setup in this project, while the more aggressive all-data-centric setup (Mitigation 4: speed+noise+pitch+spectral) underperformed Mitigation 1 on global metrics.
+- The effective data-centric mechanism from Mitigation 1 is controlled temporal variability (speed/noise), which reduces over-reliance on a fixed speaker style.
 - DANN adds an adversarial speaker head with gradient reversal, which penalizes speaker-identifiable representations while preserving language-discriminative signal in the shared encoder.
-- Together, this directly targets the shortcut path: language prediction from speaker-correlated cues.
+- Overall interpretation: data-centric mitigation helps, but aggressive augmentation can hurt class discrimination; DANN provides the strongest final bias-mitigation result.
 
 Speaker-bias-specific evidence of success extent:
 
