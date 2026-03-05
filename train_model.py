@@ -923,6 +923,48 @@ def build_trainer(
     return trainer_cls(**kwargs)
 
 
+def initialize_lazy_parameters_with_sample(
+    *,
+    model,
+    dataset_encoded,
+    data_collator,
+) -> None:
+    """
+    Initialize LazyModule parameters (for example, LazyLinear in DANN heads)
+    before Trainer inspects parameter counts.
+    """
+    has_uninitialized = any(
+        isinstance(p, torch.nn.parameter.UninitializedParameter)
+        for p in model.parameters()
+    )
+    if not has_uninitialized:
+        return
+
+    if len(dataset_encoded) == 0:
+        raise ValueError("Cannot initialize lazy parameters: empty encoded dataset.")
+
+    sample = dataset_encoded[0]
+    batch = data_collator([sample])
+    batch.pop("labels", None)
+    batch.pop("speaker_labels", None)
+
+    model_was_training = model.training
+    model.eval()
+    with torch.no_grad():
+        model(**batch)
+    if model_was_training:
+        model.train()
+
+    still_uninitialized = any(
+        isinstance(p, torch.nn.parameter.UninitializedParameter)
+        for p in model.parameters()
+    )
+    if still_uninitialized:
+        raise RuntimeError("Lazy parameters are still uninitialized after warm-up forward.")
+
+    print("Initialized lazy module parameters using one warm-up batch.")
+
+
 def main() -> None:
     cfg = CFG
     cfg.run_name = cfg.run_name or _default_run_name(cfg)
@@ -1052,6 +1094,11 @@ def main() -> None:
     else:
         model = AutoModelForAudioClassification.from_pretrained(cfg.model_id, config=model_config)
     data_collator = AudioDataCollator(feature_extractor, input_features_key)
+    initialize_lazy_parameters_with_sample(
+        model=model,
+        dataset_encoded=train_ds_encoded,
+        data_collator=data_collator,
+    )
     compute_metrics = make_compute_metrics(int_to_str)
 
     run_dir = Path(cfg.output_root) / cfg.run_name
