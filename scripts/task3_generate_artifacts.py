@@ -532,7 +532,9 @@ def main() -> None:
     for r in RUNS:
         rel = f"../indic-SLID-mac/{r.run_id}/diagnostics/confusion_matrix_validation.png"
         conf_img_lines.append(f"- {r.label}: `{rel}`")
-        conf_img_lines.append(f'  <img src="{rel}" alt="{r.label} confusion matrix" width="560" />')
+        conf_img_lines.append(
+            f'  <img src="{rel}" alt="{r.label} confusion matrix" width="560" style="display:block; margin:0;" />'
+        )
 
     tsne_img_lines: List[str] = []
     for key in ["baseline_untuned", "tuned_ref", "mitigation1", "improved_dann"]:
@@ -543,11 +545,11 @@ def main() -> None:
         if points_path.exists():
             tsne_img_lines.append(f"- {next(x.label for x in RUNS if x.key == key)} (language view): `{lang_rel}`")
             tsne_img_lines.append(
-                f'  <img src="{lang_rel}" alt="{next(x.label for x in RUNS if x.key == key)} t-SNE by language" width="560" />'
+                f'  <img src="{lang_rel}" alt="{next(x.label for x in RUNS if x.key == key)} t-SNE by language" width="560" style="display:block; margin:0;" />'
             )
             tsne_img_lines.append(f"- {next(x.label for x in RUNS if x.key == key)} (speaker view): `{spk_rel}`")
             tsne_img_lines.append(
-                f'  <img src="{spk_rel}" alt="{next(x.label for x in RUNS if x.key == key)} t-SNE by speaker" width="560" />'
+                f'  <img src="{spk_rel}" alt="{next(x.label for x in RUNS if x.key == key)} t-SNE by speaker" width="560" style="display:block; margin:0;" />'
             )
         else:
             tsne_img_lines.append(
@@ -612,6 +614,18 @@ Observed outcome summary:
 - DANN improves over tuned reference by accuracy **{fmt(d['eval_accuracy'] - tr['eval_accuracy'])}** and macro-F1 **{fmt(d['eval_macro_f1'] - tr['eval_macro_f1'])}**.
 - DANN improves over Mitigation 1 by accuracy **{fmt(d['eval_accuracy'] - m1['eval_accuracy'])}** and macro-F1 **{fmt(d['eval_macro_f1'] - m1['eval_macro_f1'])}**.
 - Eval loss is also lower in DANN, indicating better fit without needing retraining here.
+
+### Intermediate Mitigation Evidence (M2, 3A, 4)
+
+Intermediate mitigation runs are used as ablation/sensitivity evidence and are not discarded.
+
+| Run | Run ID | Accuracy | Macro-F1 | Source |
+|---|---|---:|---:|---|
+| Mitigation 2 | `SLID_utter-project-mHuBERT-147_1e-05_20260303_071843` | 0.5279 | 0.4828 | `indic-SLID-mac/.../20260303_071843/eval_results.json` |
+| Mitigation 3A | `SLID_utter-project-mHuBERT-147_1e-05_20260303_170850` | 0.4979 | 0.4561 | `indic-SLID-mac/.../20260303_170850/eval_results.json` |
+| Mitigation 4 | `SLID_utter-project-mHuBERT-147_1e-05_20260304_160046` | 0.5115 | 0.4664 | `reports/mitigation_findings_report-4.md` |
+
+These runs document tradeoffs (weak-class gains vs regressions in strong classes), which supports the final justification for choosing the baseline untuned -> tuned reference -> Mitigation 1 -> DANN path in the Task 3 discussion.
 
 ## 3. Analyze the confusion patterns between languages. Which languages are most often confused with each other? why?
 

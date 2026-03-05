@@ -57,6 +57,18 @@ Observed outcome summary:
 - DANN improves over Mitigation 1 by accuracy **0.0188** and macro-F1 **0.0558**.
 - Eval loss is also lower in DANN, indicating better fit without needing retraining here.
 
+### Intermediate Mitigation Evidence (M2, 3A, 4)
+
+Intermediate mitigation runs are used as ablation/sensitivity evidence and are not discarded.
+
+| Run | Run ID | Accuracy | Macro-F1 | Source |
+|---|---|---:|---:|---|
+| Mitigation 2 | `SLID_utter-project-mHuBERT-147_1e-05_20260303_071843` | 0.5279 | 0.4828 | `indic-SLID-mac/.../20260303_071843/eval_results.json` |
+| Mitigation 3A | `SLID_utter-project-mHuBERT-147_1e-05_20260303_170850` | 0.4979 | 0.4561 | `indic-SLID-mac/.../20260303_170850/eval_results.json` |
+| Mitigation 4 | `SLID_utter-project-mHuBERT-147_1e-05_20260304_160046` | 0.5115 | 0.4664 | `reports/mitigation_findings_report-4.md` |
+
+These runs document tradeoffs (weak-class gains vs regressions in strong classes), which supports the final justification for choosing the baseline untuned -> tuned reference -> Mitigation 1 -> DANN path in the Task 3 discussion.
+
 ## 3. Analyze the confusion patterns between languages. Which languages are most often confused with each other? why?
 
 Tracked high-impact confusion pairs:
@@ -111,13 +123,13 @@ Largest drops (Mitigation 1 -> DANN), showing tradeoff:
 Confusion matrix visuals:
 
 - Baseline (untuned): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_094826/diagnostics/confusion_matrix_validation.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_094826/diagnostics/confusion_matrix_validation.png" alt="Baseline (untuned) confusion matrix" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_094826/diagnostics/confusion_matrix_validation.png" alt="Baseline (untuned) confusion matrix" width="560" style="display:block; margin:0;" />
 - Tuned reference (no mitigation): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_150502/diagnostics/confusion_matrix_validation.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_150502/diagnostics/confusion_matrix_validation.png" alt="Tuned reference (no mitigation) confusion matrix" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_150502/diagnostics/confusion_matrix_validation.png" alt="Tuned reference (no mitigation) confusion matrix" width="560" style="display:block; margin:0;" />
 - Mitigation 1 (data-centric): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260302_111613/diagnostics/confusion_matrix_validation.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260302_111613/diagnostics/confusion_matrix_validation.png" alt="Mitigation 1 (data-centric) confusion matrix" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260302_111613/diagnostics/confusion_matrix_validation.png" alt="Mitigation 1 (data-centric) confusion matrix" width="560" style="display:block; margin:0;" />
 - Improved (DANN): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/confusion_matrix_validation.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/confusion_matrix_validation.png" alt="Improved (DANN) confusion matrix" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/confusion_matrix_validation.png" alt="Improved (DANN) confusion matrix" width="560" style="display:block; margin:0;" />
 
 ## 4. Analyze the baseline and the improved model by visualization the representations of the last layer using the TSNE algorithm. Discuss whether or not the models encode the speaker identity.
 
@@ -148,9 +160,9 @@ t-SNE visuals:
 - Tuned reference (no mitigation): t-SNE images not available in current local artifacts.
 - Mitigation 1 (data-centric): t-SNE images not available in current local artifacts.
 - Improved (DANN) (language view): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_language.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_language.png" alt="Improved (DANN) t-SNE by language" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_language.png" alt="Improved (DANN) t-SNE by language" width="560" style="display:block; margin:0;" />
 - Improved (DANN) (speaker view): `../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_speaker_topk.png`
-  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_speaker_topk.png" alt="Improved (DANN) t-SNE by speaker" width="560" />
+  <img src="../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_speaker_topk.png" alt="Improved (DANN) t-SNE by speaker" width="560" style="display:block; margin:0;" />
 
 ### Speaker-Identity Encoding Discussion
 
