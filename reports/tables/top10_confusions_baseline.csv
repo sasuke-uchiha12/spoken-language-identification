@@ -1,0 +1,11 @@
+true_lang,predicted_lang,count,percent_of_true
+sindhi,punjabi,103,68.6667
+konkani,marathi,97,64.6667
+hindi,urdu,77,51.3333
+dogri,punjabi,76,50.6667
+bengali,odia,39,26.0
+maithili,gujarati,37,24.6667
+santali,bengali,34,22.6667
+bodo,manipuri,29,19.3333
+santali,bodo,28,18.6667
+maithili,odia,26,17.3333

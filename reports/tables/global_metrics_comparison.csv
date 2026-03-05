@@ -1,0 +1,4 @@
+run_label,run_name,eval_accuracy,eval_macro_f1,eval_loss,predict_accuracy,predict_macro_f1,predict_loss,train_runtime,train_loss
+baseline,SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,0.52697,0.474808,2.162879,0.52697,0.474808,2.162879,19822.3892,9.099449
+mitigation1,SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,0.538788,0.486761,2.150414,0.538788,0.486761,2.150414,23947.4789,9.148232
+improved,SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,0.557576,0.542559,1.881485,0.557576,0.542559,1.881485,29447.8977,9.465995

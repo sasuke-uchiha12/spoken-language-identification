@@ -1,0 +1,4 @@
+run_label,run_name,train_unique_speakers,validation_unique_speakers,overlap_speaker_count,overlap_ratio_validation_speakers,validation_samples_seen_speakers,validation_samples_unseen_speakers,accuracy_seen_speakers,accuracy_unseen_speakers,accuracy_gap_seen_minus_unseen,warnings,speaker_count,zero_accuracy_speakers,le_0_2_speakers,ge_0_8_speakers,median_speaker_accuracy
+baseline,SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,110,681,0,0.0,0,3300,,0.52697,,,681,167,230,285,0.6
+mitigation1,SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,110,681,0,0.0,0,3300,,0.538788,,,681,162,231,311,0.6
+improved,SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,110,681,0,0.0,0,3300,,0.557576,,,681,96,189,276,0.6
