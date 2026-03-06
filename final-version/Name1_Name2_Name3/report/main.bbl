@@ -1,0 +1,93 @@
+\begin{thebibliography}{11}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Badr et~al.(2026)}]{badr2026dataset}
+Badr et~al. 2026.
+\newblock Nnti dataset full.
+\newblock \url{https://huggingface.co/datasets/badrex/nnti-dataset-full}.
+\newblock Hugging Face dataset card, accessed 2026-03-05.
+
+\bibitem[{Baevski et~al.(2020)Baevski, Zhou, Mohamed, and
+  Auli}]{baevski2020wav2vec2}
+Alexei Baevski, Henry Zhou, Abdelrahman Mohamed, and Michael Auli. 2020.
+\newblock \href {https://arxiv.org/abs/2006.11477} {wav2vec 2.0: A framework
+  for self-supervised learning of speech representations}.
+\newblock In \emph{Advances in Neural Information Processing Systems}.
+
+\bibitem[{Ganin et~al.(2016)Ganin, Ustinova, Ajakan, Germain, Larochelle,
+  Laviolette, Marchand, and Lempitsky}]{ganin2016dann}
+Yaroslav Ganin, Evgeniya Ustinova, Hana Ajakan, Pascal Germain, Hugo
+  Larochelle, Fran{\c{c}}ois Laviolette, Mario Marchand, and Victor Lempitsky.
+  2016.
+\newblock \href {https://jmlr.org/papers/v17/15-239.html} {Domain-adversarial
+  training of neural networks}.
+\newblock \emph{Journal of Machine Learning Research}, 17(59):1--35.
+
+\bibitem[{Hsu et~al.(2021)Hsu, Bolte, Tsai, Lakhotia, Salakhutdinov, and
+  Mohamed}]{hsu2021hubert}
+Wei-Ning Hsu, Benjamin Bolte, Yao-Hung~Hubert Tsai, Kushal Lakhotia, Ruslan
+  Salakhutdinov, and Abdelrahman Mohamed. 2021.
+\newblock \href {https://doi.org/10.1109/TASLP.2021.3122291} {Hubert:
+  Self-supervised speech representation learning by masked prediction of hidden
+  units}.
+\newblock \emph{IEEE/ACM Transactions on Audio, Speech, and Language
+  Processing}, 29:3451--3460.
+
+\bibitem[{Hunter(2007)}]{hunter2007matplotlib}
+John~D. Hunter. 2007.
+\newblock \href {https://doi.org/10.1109/MCSE.2007.55} {Matplotlib: A 2d
+  graphics environment}.
+\newblock \emph{Computing in Science \& Engineering}, 9(3):90--95.
+
+\bibitem[{Paszke et~al.(2019)Paszke, Gross, Massa, Lerer, Bradbury, Chanan,
+  Killeen, Lin, Gimelshein, Antiga et~al.}]{paszke2019pytorch}
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory
+  Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et~al.
+  2019.
+\newblock \href {https://arxiv.org/abs/1912.01703} {Pytorch: An imperative
+  style, high-performance deep learning library}.
+\newblock In \emph{Advances in Neural Information Processing Systems}.
+
+\bibitem[{Pedregosa et~al.(2011)Pedregosa, Varoquaux, Gramfort, Michel,
+  Thirion, Grisel, Blondel, Prettenhofer, Weiss, Dubourg, Vanderplas, Passos,
+  Cournapeau, Brucher, Perrot, and Duchesnay}]{pedregosa2011scikit}
+Fabian Pedregosa, Ga{\"e}l Varoquaux, Alexandre Gramfort, Vincent Michel,
+  Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron
+  Weiss, Vincent Dubourg, Jake Vanderplas, Alexandre Passos, David Cournapeau,
+  Matthieu Brucher, Matthieu Perrot, and {\'E}douard Duchesnay. 2011.
+\newblock \href {https://jmlr.org/papers/v12/pedregosa11a.html} {Scikit-learn:
+  Machine learning in python}.
+\newblock \emph{Journal of Machine Learning Research}, 12:2825--2830.
+
+\bibitem[{Pratap et~al.(2023)Pratap, Tjandra, Shi, Tomasello, Babu, Kundu,
+  Elkahky, Ni, Vyas, Bapna et~al.}]{pratap2023mms}
+Vineel Pratap, Andros Tjandra, Bowen Shi, Paden Tomasello, Arun Babu, Souvik
+  Kundu, Ali Elkahky, Zhaoheng Ni, Apoorv Vyas, Ankur Bapna, et~al. 2023.
+\newblock \href {https://arxiv.org/abs/2305.13516} {Scaling speech technology
+  to 1,000+ languages}.
+\newblock \emph{arXiv preprint arXiv:2305.13516}.
+
+\bibitem[{{PyTorch Audio Team}(2026)}]{pytorchaudioaugtutorial}
+{PyTorch Audio Team}. 2026.
+\newblock Audio data augmentation tutorial.
+\newblock
+  \url{https://docs.pytorch.org/audio/stable/tutorials/audio_data_augmentation_tutorial.html}.
+\newblock PyTorch Audio documentation, accessed 2026-03-06.
+
+\bibitem[{van~der Maaten and Hinton(2008)}]{maaten2008tsne}
+Laurens van~der Maaten and Geoffrey Hinton. 2008.
+\newblock \href {https://jmlr.org/papers/v9/vandermaaten08a.html} {Visualizing
+  data using t-sne}.
+\newblock \emph{Journal of Machine Learning Research}, 9(86):2579--2605.
+
+\bibitem[{Wolf et~al.(2020)Wolf, Debut, Sanh, Chaumond, Delangue, Moi, Cistac,
+  Rault, Louf, Funtowicz, and Brew}]{wolf2020transformers}
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue,
+  Anthony Moi, Pierric Cistac, Tim Rault, Remi Louf, Morgan Funtowicz, and
+  Jamie Brew. 2020.
+\newblock \href {https://doi.org/10.18653/v1/2020.emnlp-demos.6} {Transformers:
+  State-of-the-art natural language processing}.
+\newblock In \emph{Proceedings of the 2020 Conference on Empirical Methods in
+  Natural Language Processing: System Demonstrations}, pages 38--45.
+
+\end{thebibliography}
