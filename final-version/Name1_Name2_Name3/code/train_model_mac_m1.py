@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""Mac (MPS) wrapper for the main training pipeline.
+
+This module overrides a few runtime defaults so the same experiment can run
+reliably on Apple Silicon.
+"""
+
 import inspect
 import os
 from pathlib import Path
@@ -12,6 +18,7 @@ import train_model as base
 
 
 def print_device_info_mps() -> None:
+    """Print device status for Apple Silicon / MPS runs."""
     has_mps_backend = hasattr(torch.backends, "mps")
     mps_is_built = bool(has_mps_backend and torch.backends.mps.is_built())
     mps_is_available = bool(has_mps_backend and torch.backends.mps.is_available())
@@ -27,6 +34,7 @@ def print_device_info_mps() -> None:
 
 
 def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report_to: str) -> TrainingArguments:
+    """Build TrainingArguments with MPS-safe defaults and feature guards."""
     ta_sig = inspect.signature(TrainingArguments.__init__).parameters
     mps_available = bool(hasattr(torch.backends, "mps") and torch.backends.mps.is_available())
 
@@ -76,14 +84,17 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
     if "use_mps_device" in ta_sig:
         kwargs["use_mps_device"] = mps_available
     if "dataloader_pin_memory" in ta_sig:
+        # Pin-memory is CUDA-oriented; on MPS it often adds overhead.
         kwargs["dataloader_pin_memory"] = False
     if "no_cuda" in ta_sig and mps_available:
+        # Allow Trainer to use MPS rather than forcing CPU fallback.
         kwargs["no_cuda"] = False
 
     return TrainingArguments(**kwargs)
 
 
 def configure_mac_profile() -> None:
+    """Apply Mac-specific config overrides before calling the base pipeline."""
     # Let unsupported ops fall back to CPU instead of hard-failing on MPS.
     os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
@@ -114,6 +125,7 @@ def configure_mac_profile() -> None:
     cfg.dann_grl_lambda = 1.0
     cfg.dann_use_lambda_schedule = True
     cfg.dann_speaker_head_dropout = 0.1
+    # Keep analysis artifacts on by default for report reproducibility.
     cfg.run_tsne = True
 
     base.print_device_info = print_device_info_mps
@@ -121,6 +133,7 @@ def configure_mac_profile() -> None:
 
 
 def main() -> None:
+    """Entry point for Mac training runs."""
     configure_mac_profile()
     base.main()
 
