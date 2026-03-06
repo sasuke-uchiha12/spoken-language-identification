@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import torch
 from datasets import Audio, load_dataset
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from transformers import (
     AutoConfig,
@@ -81,6 +82,11 @@ class TrainConfig:
     run_speaker_diagnostic: bool = True
     speaker_overlap_warn_ratio: float = 0.2
     speaker_seen_gap_warn: float = 0.10
+    run_tsne: bool = False
+    tsne_max_samples: int = 2200
+    tsne_batch_size: int = 8
+    tsne_perplexity: float = 30.0
+    tsne_speaker_top_k: int = 12
 
     do_apply_dropout: bool = False
     hidden_dropout: float = 0.1
@@ -457,6 +463,223 @@ def run_speaker_diagnostic(
         print("Speaker diagnostic: no leakage warning triggered by current heuristics.")
 
 
+def _extract_last_layer_representations(
+    *,
+    model,
+    dataset_encoded,
+    data_collator: AudioDataCollator,
+    cfg: TrainConfig,
+) -> Dict[str, Any]:
+    model_device = next(model.parameters()).device
+    total_samples = len(dataset_encoded)
+    if total_samples == 0:
+        raise ValueError("Cannot run t-SNE: validation dataset is empty.")
+
+    indices = np.arange(total_samples, dtype=np.int64)
+    max_samples = min(int(cfg.tsne_max_samples), total_samples)
+    if max_samples < total_samples:
+        rng = np.random.default_rng(cfg.seed)
+        indices = np.sort(rng.choice(indices, size=max_samples, replace=False))
+
+    embeddings: List[np.ndarray] = []
+    label_ids: List[int] = []
+    languages: List[str] = []
+    speaker_ids: List[str] = []
+
+    batch_size = max(1, int(cfg.tsne_batch_size))
+    for start in range(0, len(indices), batch_size):
+        batch_indices = indices[start : start + batch_size]
+        examples = [dataset_encoded[int(i)] for i in batch_indices.tolist()]
+
+        languages.extend([str(ex["language"]) for ex in examples])
+        speaker_ids.extend([str(ex["speaker_id"]) for ex in examples])
+        label_ids.extend([int(ex["label"]) for ex in examples])
+
+        batch = data_collator(examples)
+        model_inputs = {k: v.to(model_device) for k, v in batch.items() if k != "labels"}
+
+        with torch.no_grad():
+            outputs = model(**model_inputs, output_hidden_states=True, return_dict=True)
+
+        hidden_states = getattr(outputs, "hidden_states", None)
+        if hidden_states is None or len(hidden_states) == 0:
+            raise RuntimeError("Model output does not contain hidden_states for t-SNE export.")
+
+        last_hidden = hidden_states[-1]
+        if last_hidden.ndim == 3:
+            pooled = last_hidden.mean(dim=1)
+        elif last_hidden.ndim == 2:
+            pooled = last_hidden
+        else:
+            raise RuntimeError(f"Unexpected last hidden-state shape for t-SNE: {tuple(last_hidden.shape)}")
+
+        embeddings.append(pooled.detach().cpu().numpy().astype(np.float32))
+
+    return {
+        "indices": indices,
+        "embeddings": np.concatenate(embeddings, axis=0),
+        "label_ids": np.asarray(label_ids, dtype=np.int64),
+        "languages": languages,
+        "speaker_ids": speaker_ids,
+    }
+
+
+def _plot_tsne_scatter(
+    path: Path,
+    x: np.ndarray,
+    y: np.ndarray,
+    classes: List[str],
+    title: str,
+) -> None:
+    import matplotlib.pyplot as plt
+
+    unique_classes = sorted(set(classes))
+    cmap = plt.get_cmap("tab20")
+
+    fig, ax = plt.subplots(figsize=(11, 9))
+    for idx, cls in enumerate(unique_classes):
+        mask = np.array([c == cls for c in classes], dtype=bool)
+        color = cmap(idx % 20)
+        ax.scatter(x[mask], y[mask], s=10, alpha=0.75, color=color, label=cls, linewidths=0)
+
+    ax.set_title(title)
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _plot_tsne_speaker_topk(
+    path: Path,
+    x: np.ndarray,
+    y: np.ndarray,
+    speaker_ids: List[str],
+    top_k: int,
+    title: str,
+) -> None:
+    import matplotlib.pyplot as plt
+
+    unique_speakers, counts = np.unique(np.asarray(speaker_ids), return_counts=True)
+    order = np.argsort(-counts)
+    top_speakers = set(unique_speakers[order[: max(1, int(top_k))]].tolist())
+    view_labels = [s if s in top_speakers else "OTHER" for s in speaker_ids]
+
+    unique_labels = [s for s in unique_speakers[order[: max(1, int(top_k))]].tolist()]
+    unique_labels.append("OTHER")
+
+    cmap = plt.get_cmap("tab20")
+    fig, ax = plt.subplots(figsize=(11, 9))
+
+    for idx, lbl in enumerate(unique_labels):
+        mask = np.array([c == lbl for c in view_labels], dtype=bool)
+        if not np.any(mask):
+            continue
+        if lbl == "OTHER":
+            color = "#b0b0b0"
+            alpha = 0.35
+        else:
+            color = cmap(idx % 20)
+            alpha = 0.8
+        ax.scatter(x[mask], y[mask], s=10, alpha=alpha, color=color, label=lbl, linewidths=0)
+
+    ax.set_title(title)
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+def run_tsne_diagnostic(
+    *,
+    model,
+    valid_ds_encoded,
+    data_collator: AudioDataCollator,
+    cfg: TrainConfig,
+    output_dir: Path,
+) -> None:
+    if not cfg.run_tsne:
+        return
+
+    print(
+        "t-SNE diagnostic enabled: "
+        f"max_samples={cfg.tsne_max_samples}, perplexity={cfg.tsne_perplexity}, "
+        f"batch_size={cfg.tsne_batch_size}, speaker_top_k={cfg.tsne_speaker_top_k}"
+    )
+    extracted = _extract_last_layer_representations(
+        model=model,
+        dataset_encoded=valid_ds_encoded,
+        data_collator=data_collator,
+        cfg=cfg,
+    )
+    embeddings = extracted["embeddings"]
+    label_ids = extracted["label_ids"]
+    languages = extracted["languages"]
+    speaker_ids = extracted["speaker_ids"]
+
+    n_samples = int(embeddings.shape[0])
+    if n_samples < 4:
+        raise ValueError(f"Cannot run t-SNE with very small sample size ({n_samples}).")
+
+    max_perplexity = max(2.0, float(n_samples - 1))
+    perplexity = float(min(cfg.tsne_perplexity, max_perplexity))
+    if perplexity >= n_samples:
+        perplexity = float(n_samples - 1)
+
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        random_state=cfg.seed,
+        init="pca",
+        learning_rate="auto",
+    )
+    coords = tsne.fit_transform(embeddings)
+    x = coords[:, 0]
+    y = coords[:, 1]
+
+    points_path = output_dir / "tsne_validation_points.csv"
+    with points_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["idx", "tsne_x", "tsne_y", "label_id", "language", "speaker_id"])
+        for i in range(n_samples):
+            writer.writerow(
+                [
+                    i,
+                    float(x[i]),
+                    float(y[i]),
+                    int(label_ids[i]),
+                    languages[i],
+                    speaker_ids[i],
+                ]
+            )
+
+    by_lang_path = output_dir / "tsne_validation_by_language.png"
+    _plot_tsne_scatter(
+        by_lang_path,
+        x=x,
+        y=y,
+        classes=languages,
+        title="Validation t-SNE (colored by language)",
+    )
+
+    by_speaker_path = output_dir / "tsne_validation_by_speaker_topk.png"
+    _plot_tsne_speaker_topk(
+        by_speaker_path,
+        x=x,
+        y=y,
+        speaker_ids=speaker_ids,
+        top_k=cfg.tsne_speaker_top_k,
+        title=f"Validation t-SNE (top-{cfg.tsne_speaker_top_k} speakers + OTHER)",
+    )
+
+    print(f"Saved t-SNE points CSV: {points_path}")
+    print(f"Saved t-SNE by-language PNG: {by_lang_path}")
+    print(f"Saved t-SNE by-speaker PNG: {by_speaker_path}")
+
+
 def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str) -> TrainingArguments:
     ta_sig = inspect.signature(TrainingArguments.__init__).parameters
 
@@ -706,6 +929,14 @@ def main() -> None:
             cfg=cfg,
             output_dir=diagnostics_dir,
         )
+
+    run_tsne_diagnostic(
+        model=trainer.model,
+        valid_ds_encoded=valid_ds_encoded,
+        data_collator=data_collator,
+        cfg=cfg,
+        output_dir=diagnostics_dir,
+    )
 
     if wandb_enabled and wandb is not None:
         wandb.finish()

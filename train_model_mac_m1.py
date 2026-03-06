@@ -102,6 +102,11 @@ def configure_mac_profile() -> None:
     cfg.eval_steps = 200
     cfg.save_steps = 200
     cfg.enable_train_augmentation = False
+    cfg.run_tsne = True
+    cfg.tsne_max_samples = 2200
+    cfg.tsne_batch_size = 8
+    cfg.tsne_perplexity = 30.0
+    cfg.tsne_speaker_top_k = 12
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps
