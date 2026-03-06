@@ -189,10 +189,12 @@ bodo$\rightarrow$manipuri & 39 & 45 & +6 \\
 
 \begin{figure*}[t]
     \centering
-    \includegraphics[width=0.47\textwidth]{../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_094826/diagnostics/confusion_matrix_validation.png}
+    \includegraphics[width=0.31\textwidth]{assets/confusion_baseline_untuned.png}
     \hfill
-    \includegraphics[width=0.47\textwidth]{../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/confusion_matrix_validation.png}
-    \caption{Validation confusion matrices: untuned baseline (left) vs DANN improved (right).}
+    \includegraphics[width=0.31\textwidth]{assets/confusion_mitigation1.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{assets/confusion_dann.png}
+    \caption{Validation confusion matrices: untuned baseline (left), Mitigation 1 (middle), and DANN improved (right).}
     \label{fig:cm-bu-dann}
 \end{figure*}
 
@@ -209,9 +211,9 @@ Interpretation: speaker identity appears reduced but is still partially encoded.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.48\linewidth]{../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_language.png}
+    \includegraphics[width=0.48\linewidth]{assets/tsne_dann_by_language.png}
     \hfill
-    \includegraphics[width=0.48\linewidth]{../indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260305_022125/diagnostics/tsne_validation_by_speaker_topk.png}
+    \includegraphics[width=0.48\linewidth]{assets/tsne_dann_by_speaker.png}
     \caption{DANN t-SNE on validation embeddings: language coloring (left) and speaker coloring (right).}
     \label{fig:tsne-dann}
 \end{figure}
