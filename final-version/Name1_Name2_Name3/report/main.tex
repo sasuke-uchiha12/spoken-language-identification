@@ -94,9 +94,9 @@ We executed three experimental checkpoints in sequence: (i) baseline direction u
 \toprule
 Run & Acc & Macro-F1 & Eval Loss \\
 \midrule
-Assignment baseline (MMS-300m, provided) & 0.3196 & -- & -- \\
-mHuBERT untuned (\texttt{20260301\_094826}) & 0.4676 & 0.4142 & 2.2854 \\
-mHuBERT tuned (\texttt{20260301\_150502}) & \textbf{0.5270} & \textbf{0.4748} & \textbf{2.1629} \\
+Assignment baseline (MMS-300m) & 0.3196 & -- & -- \\
+mHuBERT untuned & 0.4676 & 0.4142 & 2.2854 \\
+mHuBERT tuned & \textbf{0.5270} & \textbf{0.4748} & \textbf{2.1629} \\
 \bottomrule
 \end{tabular}
 \caption{Baseline and improvement experiment summary.}
@@ -111,7 +111,7 @@ In baseline-direction reproduction, the provided MMS-300m baseline is 31.96\% to
 \subsection*{5.1 Methods}
 We used both data-centric and model-based mitigation.
 
-\textbf{Data-centric mitigation (train-only):}
+\textbf{Data-centric mitigation:}
 \begin{itemize}
     \item Mitigation 1: speed/noise augmentation ($p=0.30$, speed 0.97--1.03, noise std 0.0005--0.002).
     \item Mitigation 2: gentler speed/noise ($p=0.25$, speed 0.98--1.02, noise std 0.0005--0.0015) with macro-F1 checkpointing.
@@ -122,10 +122,10 @@ We used both data-centric and model-based mitigation.
 
 \textbf{Model-based mitigation (DANN):}
 \begin{itemize}
-    \item Shared encoder + language head + adversarial speaker head.
-    \item Gradient reversal layer to suppress speaker-identifiable directions.
+    \item Architecture: shared encoder with two heads, one for language prediction and one adversarial head for speaker prediction.
+    \item Training logic: a gradient reversal layer forces the encoder to reduce speaker-identifiable information while preserving language-discriminative features.
     \item Final DANN settings: \texttt{speaker\_loss\_weight=0.1}, \texttt{grl\_lambda=1.0}, lambda schedule enabled, speaker-head dropout 0.1.
-    \item Final DANN run intentionally used augmentation off to isolate model-based effect.
+    \item Run design: augmentation was disabled in the final DANN run to isolate the effect of adversarial mitigation from augmentation effects.
 \end{itemize}
 
 Encoder objective:
@@ -134,7 +134,9 @@ Encoder objective:
 \]
 
 \subsection*{5.2 experiments}
-\begin{table}[t]
+We evaluated mitigation variants against the tuned no-mitigation reference on the same split and metrics. Table~\ref{tab:task2_summary} reports global quality, and Table~\ref{tab:mitigation_confusions} tracks high-impact confusion pairs across untuned, tuned, mitigation-1, and DANN runs.
+
+\begin{table}[h]
 \centering
 \small
 \setlength{\tabcolsep}{3pt}
@@ -155,25 +157,37 @@ DANN (final improved) & \textbf{0.5576} & \textbf{0.5426} & \textbf{1.8815} \\
 \label{tab:task2_summary}
 \end{table}
 
-\subsection*{5.3 results}
-Key outcomes:
-\begin{itemize}
-    \item DANN outperforms tuned no-mitigation by +0.0306 accuracy and +0.0678 macro-F1.
-    \item DANN outperforms best data-centric run (Mitigation 1) by +0.0188 accuracy and +0.0558 macro-F1.
-    \item Data-centric methods are sensitive to augmentation strength: Mitigation 1 worked best; stronger mixed augmentation (Mitigation 4) underperformed.
-\end{itemize}
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Pair & Untuned & Tuned & Mitigation 1 & DANN \\
+\midrule
+konkani$\rightarrow$marathi & 106 & 97 & 106 & 74 \\
+sindhi$\rightarrow$punjabi & 79 & 103 & 102 & 14 \\
+hindi$\rightarrow$urdu & 60 & 77 & 68 & 39 \\
+dogri$\rightarrow$punjabi & 53 & 76 & 71 & 44 \\
+bodo$\rightarrow$manipuri & 39 & 29 & 39 & 45 \\
+odia$\rightarrow$bengali & 26 & 23 & 45 & 10 \\
+santali$\rightarrow$bengali & 54 & 34 & 40 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Confusion-pair counts across key runs (validation).}
+\label{tab:mitigation_confusions}
+\end{table}
 
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
-    \hfill
-    \includegraphics[width=0.31\textwidth]{figures/confusion_mitigation1.png}
-    \hfill
-    \includegraphics[width=0.31\textwidth]{figures/confusion_dann.png}
-    \caption{Validation confusion matrices: untuned reference (left), Mitigation 1 (middle), DANN improved (right).}
-    \label{fig:confusions}
-\end{figure*}
 \FloatBarrier
+
+\subsection*{5.3 results}
+Overall, DANN is the strongest mitigation result: +0.0306 accuracy and +0.0678 macro-F1 over tuned no-mitigation, and +0.0188 accuracy and +0.0558 macro-F1 over Mitigation 1. Data-centric methods were useful but sensitive to augmentation strength; Mitigation 1 was the best data-centric variant, while stronger mixed augmentation (Mitigation 4) underperformed.
+
+Confusion behavior also improved for several high-impact pairs (Table~\ref{tab:mitigation_confusions}), especially \texttt{sindhi$\rightarrow$punjabi} and \texttt{hindi$\rightarrow$urdu}. Some pairs remain difficult (for example \texttt{konkani$\rightarrow$marathi}), so mitigation is strong but not complete.
+
+Speaker-bias diagnostics support that these gains are not from speaker leakage: all key runs show \texttt{overlap\_speaker\_count=0} and no warnings, while unseen-speaker accuracy improves from 0.4676 (untuned) to 0.5576 (DANN). We also observe substantial recovery on historically weak classes, with weak-class mean accuracy increasing from 0.0227 (untuned) to 0.3547 (DANN).
 
 \section*{6 analysis}
 \subsection*{6.1 Discuss the source of the bias in the data and explain why learning from biased data is difficult}
@@ -207,27 +221,18 @@ Most frequent confusions are:
     \item \texttt{hindi$\rightarrow$urdu}
 \end{itemize}
 
-These are plausible due to linguistic/acoustic proximity and insufficient class-separating cues in short utterances. DANN reduces several high-volume confusions, but not all.
+These are plausible due to linguistic/acoustic proximity and insufficient class-separating cues in short utterances. As shown in Table~\ref{tab:mitigation_confusions}, DANN reduces several high-volume confusions, but not all.
 
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}p{0.49\columnwidth}rrr@{}}
-\toprule
-Pair (true$\rightarrow$pred) & Untuned & DANN & $\Delta$ \\
-\midrule
-konkani$\rightarrow$marathi & 106 & 74 & -32 \\
-sindhi$\rightarrow$punjabi & 79 & 14 & -65 \\
-hindi$\rightarrow$urdu & 60 & 39 & -21 \\
-santali$\rightarrow$bengali & 54 & 10 & -44 \\
-dogri$\rightarrow$punjabi & 53 & 44 & -9 \\
-bodo$\rightarrow$manipuri & 39 & 45 & +6 \\
-\bottomrule
-\end{tabular}
-\caption{Top confusion shifts from untuned reference to DANN.}
-\label{tab:confusion_shift}
-\end{table}
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_mitigation1.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_dann.png}
+    \caption{Validation confusion matrices: untuned reference (left), Mitigation 1 (middle), DANN improved (right).}
+    \label{fig:confusions}
+\end{figure*}
 
 \subsection*{6.4 Analyze the baseline and the improved model by visualization the representations of the last layer using the TSNE algorithm. Discuss whether or not the models encode the speaker identity}
 t-SNE is applied to last-layer validation embeddings. In local final artifacts, full t-SNE exports are available for DANN; untuned/tuned/Mitigation-1 t-SNE exports are not fully available in this branch snapshot.
