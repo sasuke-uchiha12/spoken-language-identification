@@ -22,16 +22,16 @@ Saarland University \\
 \maketitle
 
 \begin{abstract}
-This report covers all three project tasks for Indic spoken language identification on \texttt{badrex/nnti-dataset-full}. For Task 1, we reproduced baseline pipelines and compared pretrained backbones. For Task 2, we addressed speaker shortcut bias with data-centric augmentation and model-based adversarial training (DANN). For Task 3, we analyzed bias sources, confusion patterns, and representation behavior with t-SNE. Across complete runs, the best model in our branch is DANN over mHuBERT, improving validation accuracy from 0.4676 (untuned mHuBERT baseline) to 0.5576 and macro-F1 from 0.4142 to 0.5426, while preserving speaker-disjoint validation integrity.
+This report covers all three project tasks for Indic spoken language identification on \texttt{badrex/nnti-dataset-full}. In Task 1, we reproduced baseline pipelines and compared pretrained backbones. In Task 2, we addressed speaker shortcut bias through data-centric augmentation and model-based adversarial training (DANN). In Task 3, we analyzed likely bias sources, confusion patterns, and representation behavior with t-SNE. Across complete runs, the strongest model in our branch is DANN over mHuBERT, improving validation accuracy from 0.4676 (untuned mHuBERT baseline) to 0.5576 and macro-F1 from 0.4142 to 0.5426 while preserving speaker-disjoint validation integrity.
 \end{abstract}
 
 \section{Introduction}
-Spoken language identification (SLID) in low-resource, multi-speaker settings is vulnerable to shortcut learning: models may use speaker identity cues instead of language-specific cues. Our project was organized into three tasks: (1) reproduce and improve baseline performance, (2) mitigate speaker bias, and (3) provide analysis supported by quantitative diagnostics and visualization.
+Spoken language identification (SLID) in low-resource, multi-speaker settings is vulnerable to shortcut learning: models may rely on speaker identity cues instead of language-specific cues. Our project is organized into three tasks: (1) reproduce and improve baseline performance, (2) mitigate speaker bias, and (3) analyze outcomes with quantitative diagnostics and visualization.
 
 Our implementation is based on PyTorch \citep{paszke2019pytorch} and Hugging Face Transformers/Datasets \citep{wolf2020transformers}. We evaluated pretrained speech encoders including MMS \citep{pratap2023mms}, wav2vec 2.0 \citep{baevski2020wav2vec2}, and mHuBERT (HuBERT family \citep{hsu2021hubert}).
 
 \section{Data and Experimental Protocol}
-Dataset: \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset} with predefined \texttt{train}/\texttt{validation} splits.
+We use \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset}, which provides predefined \texttt{train}/\texttt{validation} splits.
 
 Key characteristics from diagnostics:
 \begin{itemize}
@@ -42,7 +42,7 @@ Key characteristics from diagnostics:
     \item Speaker overlap between train and validation: 0.
 \end{itemize}
 
-All model selection is from validation metrics with best-checkpoint loading enabled. We report accuracy, macro-F1, eval loss, per-language accuracy, confusion matrices, and speaker diagnostics.
+Model selection is based on validation metrics with best-checkpoint loading enabled. We report accuracy, macro-F1, eval loss, per-language accuracy, confusion matrices, and speaker diagnostics.
 
 \section{Task 1: Baseline Recreation and Improvement}
 \subsection{Models and Results}
@@ -66,11 +66,11 @@ mHuBERT (tuned) & 0.5270 & 0.4748 & 2.1629 \\
 \end{table}
 
 \subsection{Task 1 Conclusion}
-The strongest Task 1 path in our environment is mHuBERT with tuning, improving over untuned mHuBERT by +0.0594 accuracy and +0.0607 macro-F1. This tuned run is used as the no-mitigation reference for Task 2.
+In our environment, mHuBERT with tuning is the strongest Task 1 setting, improving over untuned mHuBERT by +0.0594 accuracy and +0.0607 macro-F1. We use this tuned run as the no-mitigation reference for Task 2.
 
 \section{Task 2: Speaker-Bias Mitigation}
 \subsection{Problem and Approaches}
-Bias risk: with limited speaker diversity per language in training, the model can minimize loss using speaker-correlated signals.
+With limited speaker diversity per language in training, the model can reduce loss by exploiting speaker-correlated signals, creating a clear shortcut risk.
 
 We evaluated:
 \begin{itemize}
@@ -101,16 +101,16 @@ DANN (final improved) & \textbf{0.558} & \textbf{0.543} & \textbf{1.881} \\
 \end{table}
 
 \subsection{Extent of Success}
-Compared to untuned baseline mHuBERT, DANN improves by +0.0900 accuracy and +0.1284 macro-F1. Compared to Mitigation 1, DANN still improves by +0.0188 accuracy and +0.0558 macro-F1.
+Relative to untuned baseline mHuBERT, DANN improves by +0.0900 accuracy and +0.1284 macro-F1. Relative to Mitigation 1, DANN still improves by +0.0188 accuracy and +0.0558 macro-F1.
 
 Speaker-oriented evidence:
 \begin{itemize}
     \item Unseen-speaker validation accuracy: 0.4676 (untuned) $\rightarrow$ 0.5576 (DANN).
-    \item Overlap speaker count remains 0 (no leakage warning).
+    \item Train/validation speaker overlap remains 0 (no leakage warning).
     \item Key bias-sensitive confusions reduced, e.g., \texttt{sindhi$\rightarrow$punjabi}: 79 $\rightarrow$ 14.
 \end{itemize}
 
-This indicates successful bias mitigation, but not complete removal of speaker information.
+These results indicate meaningful mitigation of speaker-related shortcuts, but not complete removal of speaker information.
 
 \subsection{Ablation and Efficiency Summary}
 To make the mitigation decision explicit, Table~\ref{tab:ablation-efficiency} reports deltas relative to the tuned no-mitigation reference.
@@ -134,11 +134,11 @@ DANN (final improved) & \textbf{+0.031} & \textbf{+0.068} & 8.18 \\
 \label{tab:ablation-efficiency}
 \end{table}
 
-Interpretation: Mitigation 1 gave a stable data-centric gain; Mitigation 2 gave weaker gains; Mitigation 3A regressed; DANN gave the strongest final improvement, with higher training cost but better accuracy/F1 tradeoff.
+Interpretation: Mitigation 1 gives a stable data-centric gain; Mitigation 2 gives weaker gains; Mitigation 3A regresses; DANN provides the strongest final improvement, with higher training cost but a better accuracy/F1 tradeoff.
 
 \section{Task 3: Analysis}
 \subsection{Source of Bias and Learning Difficulty}
-The data regime (few train speakers per language, fully unseen validation speakers) creates a strong shortcut risk. Early optimization can latch onto speaker timbre/prosody, while weak classes remain under-separated. This is reflected by near-zero classes in untuned baseline (e.g., maithili, konkani) and concentrated confusion clusters.
+The data regime (few train speakers per language, fully unseen validation speakers) creates strong shortcut pressure. Early optimization may latch onto speaker timbre/prosody, while weaker classes remain under-separated. This pattern appears in near-zero class performance for the untuned baseline (e.g., maithili, konkani) and concentrated confusion clusters.
 
 \subsection{Confusion Analysis}
 Most frequent confusions include:
@@ -147,7 +147,7 @@ Most frequent confusions include:
     \item \texttt{sindhi$\rightarrow$punjabi}
     \item \texttt{hindi$\rightarrow$urdu}
 \end{itemize}
-Reasons are plausible linguistic/acoustic proximity and class difficulty imbalance. DANN reduces several dominant pairs but does not eliminate all structural confusion.
+Likely drivers include linguistic/acoustic proximity and imbalance in class difficulty. DANN reduces several dominant pairs but does not eliminate all structural confusion.
 
 \begin{figure*}[t]
     \centering
@@ -159,7 +159,7 @@ Reasons are plausible linguistic/acoustic proximity and class difficulty imbalan
 \end{figure*}
 
 \subsection{Representation Analysis (t-SNE)}
-We used t-SNE \citep{maaten2008tsne} on last-layer validation embeddings for the improved run. Baseline/tuned/M1 t-SNE export was not reproducible from current local artifacts because their run folders do not contain full model/preprocessor checkpoint files.
+We applied t-SNE \citep{maaten2008tsne} to last-layer validation embeddings for the improved run. Baseline/tuned/M1 t-SNE export was not reproducible from current local artifacts because those run folders do not contain full model/preprocessor checkpoint files.
 
 For DANN:
 \begin{itemize}
@@ -167,7 +167,7 @@ For DANN:
     \item Silhouette (speaker top-k): -0.0992
     \item kNN speaker purity@5: 0.3433
 \end{itemize}
-Interpretation: speaker identity is reduced but still partially encoded.
+Interpretation: speaker identity appears reduced but is still partially encoded.
 
 \begin{figure}[t]
     \centering
@@ -179,7 +179,7 @@ Interpretation: speaker identity is reduced but still partially encoded.
 \end{figure}
 
 \subsection{Additional Insightful Analyses}
-We added extra quantitative analyses to avoid single-metric conclusions:
+To avoid single-metric conclusions, we added the following quantitative analyses:
 \begin{itemize}
     \item Class-balance profile across runs (mean/median/min/max per-language accuracy).
     \item Weak-class recovery index (baseline weak set: hindi, konkani, maithili, santali, sindhi).
@@ -189,7 +189,7 @@ We added extra quantitative analyses to avoid single-metric conclusions:
 These analyses are documented in \texttt{reports/task3\_analysis.md} and \texttt{reports/tables/}.
 
 \section{Reproducibility Notes}
-We report the exact run IDs and artifacts used in analysis (\texttt{reports/artifacts\_used.md}). Core reproducibility settings:
+We report the exact run IDs and artifacts used in analysis (\texttt{reports/artifacts\_used.md}). Core reproducibility settings are:
 \begin{itemize}
     \item Seed: 42.
     \item Training epochs: 3.
@@ -197,15 +197,15 @@ We report the exact run IDs and artifacts used in analysis (\texttt{reports/arti
     \item Best-checkpoint loading enabled; mitigation runs selected with macro-F1 criterion.
     \item Speaker diagnostics and confusion matrices generated for every final compared run.
 \end{itemize}
-These controls reduce accidental variance and support fair mitigation comparison.
+These controls reduce accidental variance and support a fair mitigation comparison.
 
 \FloatBarrier
 
 \section{Conclusion}
-Across all three tasks, mHuBERT provided the strongest backbone in our environment. Data-centric mitigation improved balanced performance, and DANN gave the best final model. The final DANN run achieved 0.5576 validation accuracy and 0.5426 macro-F1 with clean speaker-disjoint diagnostics. Remaining challenges are concentrated in a small set of linguistically close language pairs.
+Across all three tasks, mHuBERT is the strongest backbone in our environment. Data-centric mitigation improves balanced performance, and DANN yields the best final model. The final DANN run achieves 0.5576 validation accuracy and 0.5426 macro-F1 with clean speaker-disjoint diagnostics. Remaining challenges are concentrated in a small set of linguistically close language pairs.
 
 \section*{Limitations}
-First, the strongest t-SNE comparison currently uses improved-run embeddings, while baseline/tuned/M1 t-SNE export is limited by missing checkpoint artifacts in those run folders. Second, some persistent confusions (e.g., konkani-marathi) remain unresolved and may require additional data balancing or task-specific objectives. Third, compute constraints limited the number of long-run and combined-mitigation experiments.
+First, the strongest t-SNE comparison currently uses improved-run embeddings, while baseline/tuned/M1 t-SNE export is limited by missing checkpoint artifacts in those run folders. Second, some persistent confusions (e.g., konkani-marathi) remain unresolved and may require additional data balancing or task-specific objectives. Third, compute constraints limit the number of long-run and combined-mitigation experiments.
 
 \section*{Ethics Statement}
 This work focuses on technical mitigation of dataset bias and does not deploy a user-facing system. We explicitly monitored speaker overlap and unseen-speaker behavior to reduce leakage-driven claims. Because language recognition systems can be misused for profiling, we report calibrated conclusions and avoid claims of complete bias removal.
