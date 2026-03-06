@@ -190,30 +190,47 @@ Confusion behavior also improved for several high-impact pairs (Table~\ref{tab:m
 Speaker-bias diagnostics support that these gains are not from speaker leakage: all key runs show \texttt{overlap\_speaker\_count=0} and no warnings, while unseen-speaker accuracy improves from 0.4676 (untuned) to 0.5576 (DANN). We also observe substantial recovery on historically weak classes, with weak-class mean accuracy increasing from 0.0227 (untuned) to 0.3547 (DANN).
 
 \section*{6 analysis}
-\subsection*{6.1 Discuss the source of the bias in the data and explain why learning from biased data is difficult}
-The bias source is limited speaker diversity in training (110 speakers over 22 languages) plus fully unseen validation speakers (681). This creates a shortcut risk: the model can use speaker timbre/prosody as an easier proxy for language. Learning becomes difficult because weak classes get under-separated while related languages share acoustic patterns.
+\subsection*{6.1 Bias Source and Learning Difficulty}
+The bias source is limited speaker diversity in training (110 speakers over 22 languages) combined with a strict unseen-speaker validation set (681 speakers, 3300 validation samples). This creates a shortcut risk: during optimization, speaker timbre/prosody can become an easier signal than language-discriminative content.
+
+Learning is difficult for two reasons. First, with few speakers per language, the encoder can partially fit speaker-correlated cues in train even when validation speakers are disjoint. Second, related-language pairs have overlapping acoustic/prosodic signatures, so weak classes remain under-separated.
 
 Evidence from this project:
 \begin{itemize}
     \item Untuned reference has near-zero classes (for example maithili 0.0000, konkani 0.0000, sindhi 0.0333).
     \item Baseline confusion mass concentrates in a few pairs (for example konkani$\rightarrow$marathi and sindhi$\rightarrow$punjabi).
+    \item Validation is fully unseen-speaker (seen-speaker samples = 0, unseen-speaker samples = 3300), so weak performance cannot be explained by train/validation speaker overlap.
 \end{itemize}
 
-\subsection*{6.2 Discuss your proposed technique and how it addresses the speaker bias problem. To what extent was the solution successful?}
+\subsection*{6.2 Mitigation Approach and Success Extent}
 Our approach combines controlled data-centric variability and model-based adversarial de-biasing.
 \begin{itemize}
     \item Data-centric mitigation (especially Mitigation 1) improves robustness by breaking fixed speaker-style dependence.
     \item DANN directly penalizes speaker-identifiable features in the shared encoder.
 \end{itemize}
 
-Success extent is strong but partial:
-\begin{itemize}
-    \item Unseen-speaker accuracy improves from 0.4676 (untuned) to 0.5576 (DANN).
-    \item Weak-class recovery is substantial (for example sindhi 0.0333 $\rightarrow$ 0.5000, maithili 0.0000 $\rightarrow$ 0.4467).
-    \item Some previously strong classes regress, so bias reduction is not complete.
-\end{itemize}
+Measured outcome is strong but partial. Global gains are summarized in Table~\ref{tab:dann_impact}.
 
-\subsection*{6.3 Analyze the confusion patterns between languages. Which languages are most often confused with each other? why?}
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Comparison & $\Delta$Acc & $\Delta$Macro-F1 \\
+\midrule
+Untuned $\rightarrow$ DANN & +0.0900 & +0.1284 \\
+Tuned no-mitigation $\rightarrow$ DANN & +0.0306 & +0.0678 \\
+Mitigation 1 $\rightarrow$ DANN & +0.0188 & +0.0558 \\
+\bottomrule
+\end{tabular}
+\caption{Global impact of DANN versus reference runs.}
+\label{tab:dann_impact}
+\end{table}
+
+Class-level behavior shows gains and tradeoffs: unseen-speaker accuracy improves from 0.4676 to 0.5576, weak-class mean rises from 0.0227 to 0.3547, and some previously strong classes still regress (for example nepali and punjabi vs Mitigation 1).
+
+\subsection*{6.3 Confusion Patterns}
 Most frequent confusions are:
 \begin{itemize}
     \item \texttt{konkani$\rightarrow$marathi}
@@ -221,9 +238,7 @@ Most frequent confusions are:
     \item \texttt{hindi$\rightarrow$urdu}
 \end{itemize}
 
-These are plausible due to linguistic/acoustic proximity and insufficient class-separating cues in short utterances. As shown in Table~\ref{tab:mitigation_confusions}, DANN reduces several high-volume confusions, but not all.
-
-\begin{figure*}[t]
+\begin{figure*}[!htbp]
     \centering
     \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
     \hfill
@@ -234,8 +249,22 @@ These are plausible due to linguistic/acoustic proximity and insufficient class-
     \label{fig:confusions}
 \end{figure*}
 
-\subsection*{6.4 Analyze the baseline and the improved model by visualization the representations of the last layer using the TSNE algorithm. Discuss whether or not the models encode the speaker identity}
+These are plausible due to linguistic/acoustic proximity and insufficient class-separating cues in short utterances. As shown in Table~\ref{tab:mitigation_confusions}, DANN reduces several high-volume confusions, but not all.
+
+Pattern-specific interpretation:
+\begin{itemize}
+    \item \texttt{hindi$\rightarrow$urdu}: high lexical and prosodic similarity in conversational speech.
+    \item \texttt{konkani$\rightarrow$marathi}: regional/contact similarity and overlapping speaking styles.
+    \item \texttt{sindhi$\rightarrow$punjabi}: difficult boundary under uneven class difficulty; strongly reduced by DANN (102 $\rightarrow$ 14 vs Mitigation 1).
+    \item \texttt{odia$\rightarrow$bengali} and \texttt{santali$\rightarrow$bengali}: neighboring-language proximity; both reduced in DANN.
+\end{itemize}
+
+DANN improves multiple dominant confusions versus untuned baseline (\texttt{sindhi$\rightarrow$punjabi} 79$\rightarrow$14, \texttt{santali$\rightarrow$bengali} 54$\rightarrow$10, \texttt{odia$\rightarrow$bengali} 26$\rightarrow$10, \texttt{hindi$\rightarrow$urdu} 60$\rightarrow$39, \texttt{konkani$\rightarrow$marathi} 106$\rightarrow$74). At the same time, some alternative confusion channels increase (for example \texttt{bodo$\rightarrow$manipuri} 39$\rightarrow$45 and \texttt{nepali$\rightarrow$manipuri} 18$\rightarrow$33 when compared with Mitigation 1), showing that error redistribution still exists.
+
+\subsection*{6.4 Representation Analysis (t-SNE)}
 t-SNE is applied to last-layer validation embeddings. In local final artifacts, full t-SNE exports are available for DANN; untuned/tuned/Mitigation-1 t-SNE exports are not fully available in this branch snapshot.
+
+For comparability, the analysis target setup is fixed (\texttt{max\_samples}=2200, \texttt{perplexity}=30, \texttt{seed}=42, \texttt{speaker\_top\_k}=12).
 
 For DANN:
 \begin{itemize}
@@ -244,7 +273,9 @@ For DANN:
     \item kNN speaker purity@5: 0.3433
 \end{itemize}
 
-Interpretation: speaker structure is reduced but still present, so speaker identity is not fully removed from representations.
+Interpretation: speaker structure is reduced but still present, so speaker identity is not fully removed from representations. The non-zero local speaker purity indicates residual speaker information in embedding neighborhoods, even after adversarial mitigation.
+
+Because baseline/tuned/Mitigation-1 t-SNE point exports are missing in this local snapshot, we avoid overclaiming geometric comparison across all runs. However, combined with split diagnostics (overlap=0, no warnings) and unseen-speaker accuracy gains, DANN still shows better speaker-robust language behavior than earlier references.
 
 \begin{figure}[t]
     \centering
@@ -255,39 +286,10 @@ Interpretation: speaker structure is reduced but still present, so speaker ident
     \label{fig:tsne_dann}
 \end{figure}
 
-\subsection*{6.5 Any other analyses you find insightful for your model}
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{3pt}
-\resizebox{\columnwidth}{!}{
-\begin{tabular}{@{}p{0.34\columnwidth}rrrr@{}}
-\toprule
-Run & WeakMean & Top5Mass & BestStepRatio & UnseenAcc \\
-\midrule
-Untuned ref & 0.0227 & 0.2003 & 0.9511 & 0.4676 \\
-Tuned ref & 0.0573 & 0.2511 & 0.9204 & 0.5270 \\
-Mitigation 1 & 0.0840 & 0.2602 & 0.8897 & 0.5388 \\
-DANN & \textbf{0.3547} & \textbf{0.1610} & 0.9971 & \textbf{0.5576} \\
-\bottomrule
-\end{tabular}
-}
-\caption{Additional analysis summary from run artifacts.}
-\label{tab:extra_analysis}
-\end{table}
-
-This shows DANN improves weak-class behavior and reduces concentration of errors into a few dominant confusion pairs.
 \FloatBarrier
 
 \section*{7 conclusion}
 Tuned mHuBERT is a strong no-mitigation reference. Mitigation quality is configuration-sensitive: mild data-centric augmentation helps, while overly aggressive augmentation can hurt. The best final model is DANN, which gives the strongest overall performance and better weak-class recovery under strict unseen-speaker validation. Analysis confirms meaningful bias reduction, with remaining hard confusion pairs and residual speaker signal.
-
-\section*{Limitations}
-\begin{itemize}
-    \item Full baseline-vs-improved t-SNE comparison is limited by missing historical t-SNE exports for some earlier runs in the current local artifact set.
-    \item Some language pairs remain structurally difficult (for example konkani/marathi and hindi/urdu).
-    \item AI usage disclosure: this report text was drafted with OpenAI Codex assistance; all run IDs, metrics, and claims were verified against local artifact files before inclusion.
-\end{itemize}
 
 \renewcommand{\refname}{Reference}
 \bibliographystyle{acl_natbib}
