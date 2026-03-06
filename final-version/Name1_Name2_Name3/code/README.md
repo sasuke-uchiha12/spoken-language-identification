@@ -22,13 +22,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Option B: `uv` (optional equivalent)
+### Option B: `uv` with lockfile (optional equivalent)
 
 ```bash
-uv venv .venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
+uv sync 
 ```
+
+This uses `pyproject.toml` + `uv.lock` and creates a `.venv` automatically.
 
 ## How to Run
 
@@ -38,10 +38,22 @@ uv pip install -r requirements.txt
 python train_model.py
 ```
 
+With `uv`:
+
+```bash
+uv run train_model.py
+```
+
 ### 2) MacBook MPS wrapper (recommended on Apple Silicon)
 
 ```bash
 python train_model_mac_m1.py
+```
+
+With `uv`:
+
+```bash
+uv run train_model_mac_m1.py
 ```
 
 `train_model_mac_m1.py` is a run wrapper over `train_model.py` that applies Mac MPS-friendly runtime settings (batch size, accumulation, eval/save cadence), while keeping the same DANN default model behavior.
