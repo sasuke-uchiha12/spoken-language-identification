@@ -1,0 +1,12 @@
+{
+  "train_unique_speakers": 110,
+  "validation_unique_speakers": 681,
+  "overlap_speaker_count": 0,
+  "overlap_ratio_validation_speakers": 0.0,
+  "validation_samples_seen_speakers": 0,
+  "validation_samples_unseen_speakers": 3300,
+  "accuracy_seen_speakers": null,
+  "accuracy_unseen_speakers": 0.5503030303030303,
+  "accuracy_gap_seen_minus_unseen": null,
+  "warnings": []
+}
