@@ -28,7 +28,7 @@ This report covers all three project tasks for Indic spoken language identificat
 \section{Introduction}
 Spoken language identification (SLID) in low-resource, multi-speaker settings is vulnerable to shortcut learning: models may rely on speaker identity cues instead of language-specific cues. Our project is organized into three tasks: (1) reproduce and improve baseline performance, (2) mitigate speaker bias, and (3) analyze outcomes with quantitative diagnostics and visualization.
 
-Our implementation is based on PyTorch \citep{paszke2019pytorch} and Hugging Face Transformers/Datasets \citep{wolf2020transformers}. We evaluated pretrained speech encoders including MMS \citep{pratap2023mms}, wav2vec 2.0 \citep{baevski2020wav2vec2}, and mHuBERT (HuBERT family \citep{hsu2021hubert}).
+Our implementation is based on PyTorch \citep{paszke2019pytorch} and Hugging Face Transformers/Datasets \citep{wolf2020transformers}. For analysis tooling, we used scikit-learn \citep{pedregosa2011scikit} and Matplotlib \citep{hunter2007matplotlib}. We evaluated pretrained speech encoders including MMS \citep{pratap2023mms}, wav2vec 2.0 \citep{baevski2020wav2vec2}, and mHuBERT (HuBERT family \citep{hsu2021hubert}).
 
 \section{Data and Experimental Protocol}
 We use \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset}, which provides predefined \texttt{train}/\texttt{validation} splits.
@@ -43,6 +43,11 @@ Key characteristics from diagnostics:
 \end{itemize}
 
 Model selection is based on validation metrics with best-checkpoint loading enabled. We report accuracy, macro-F1, eval loss, per-language accuracy, confusion matrices, and speaker diagnostics.
+
+\subsection{Methods and Experimental Settings}
+To keep comparisons fair across Task 1/2/3 experiments, we kept the split protocol fixed and changed only the intended method components. Core controls were: fixed seed (42), same dataset split, same base backbone family (mHuBERT for final comparisons), and best-checkpoint selection rather than last-step reporting.
+
+Task 1 experiments compare pretrained backbones and then a tuned mHuBERT reference. Task 2 experiments start from the tuned no-mitigation reference and introduce either (i) data-centric augmentation or (ii) adversarial speaker de-biasing. Task 3 uses run artifacts (metrics, confusion, speaker diagnostics, t-SNE outputs) for evidence-based analysis.
 
 \section{Task 1: Baseline Recreation and Improvement}
 \subsection{Models and Results}
@@ -76,8 +81,17 @@ We evaluated:
 \begin{itemize}
     \item Data-centric mitigation (train-only augmentation): speed perturbation + waveform noise (Mitigation 1).
     \item Model-based mitigation: DANN with gradient reversal \citep{ganin2016dann}.
-    \item Intermediate ablations (Mitigation 2, 3A, 4) to study tradeoffs.
+    \item Intermediate ablations (Mitigation 2, 3A, 3B, 4) to study tradeoffs.
 \end{itemize}
+
+\paragraph{Method details.}
+For data-centric mitigation, augmentation is applied only on train samples (not validation), with probabilistic speed/noise perturbation. For model-based mitigation, DANN uses a shared encoder with a language head and an adversarial speaker head through gradient reversal.
+
+At encoder level, the optimization target is:
+\[
+\mathcal{L}_{enc} = \mathcal{L}_{lang} - \lambda \mathcal{L}_{speaker}
+\]
+which encourages language-discriminative but speaker-invariant features. In our final DANN run, we used \texttt{speaker\_loss\_weight}=0.1 and \texttt{grl\_lambda}=1.0 with scheduling.
 
 \subsection{Mitigation Results}
 \begin{table}[t]
@@ -92,6 +106,7 @@ Tuned ref (no mitigation) & 0.527 & 0.475 & 2.163 \\
 Mitigation 1 (data-centric) & 0.539 & 0.487 & 2.150 \\
 Mitigation 2 & 0.528 & 0.483 & 2.139 \\
 Mitigation 3A & 0.498 & 0.456 & 2.188 \\
+Mitigation 3B & 0.528 & 0.482 & 2.146 \\
 Mitigation 4 & 0.512 & 0.466 & 2.213 \\
 DANN (final improved) & \textbf{0.558} & \textbf{0.543} & \textbf{1.881} \\
 \bottomrule
@@ -127,6 +142,8 @@ Tuned ref (no mitigation) & 0.000 & 0.000 & 5.51 \\
 Mitigation 1 & +0.012 & +0.012 & 6.65 \\
 Mitigation 2 & +0.001 & +0.008 & 6.17 \\
 Mitigation 3A & -0.029 & -0.019 & 9.24 \\
+Mitigation 3B & +0.001 & +0.007 & 9.18 \\
+Mitigation 4 & -0.015 & -0.008 & 5.99 \\
 DANN (final improved) & \textbf{+0.031} & \textbf{+0.068} & 8.18 \\
 \bottomrule
 \end{tabular}
@@ -134,7 +151,7 @@ DANN (final improved) & \textbf{+0.031} & \textbf{+0.068} & 8.18 \\
 \label{tab:ablation-efficiency}
 \end{table}
 
-Interpretation: Mitigation 1 gives a stable data-centric gain; Mitigation 2 gives weaker gains; Mitigation 3A regresses; DANN provides the strongest final improvement, with higher training cost but a better accuracy/F1 tradeoff.
+Interpretation: Mitigation 1 gives a stable data-centric gain; Mitigation 2 and 3B are near-tied but below Mitigation 1; Mitigation 3A regresses; Mitigation 4 underperforms Mitigation 1; DANN provides the strongest final improvement, with higher training cost but a better accuracy/F1 tradeoff.
 
 \section{Task 3: Analysis}
 \subsection{Source of Bias and Learning Difficulty}
@@ -148,6 +165,27 @@ Most frequent confusions include:
     \item \texttt{hindi$\rightarrow$urdu}
 \end{itemize}
 Likely drivers include linguistic/acoustic proximity and imbalance in class difficulty. DANN reduces several dominant pairs but does not eliminate all structural confusion.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.48\columnwidth}rrr@{}}
+\toprule
+Pair (true$\rightarrow$pred) & Baseline & DANN & $\Delta$ \\
+\midrule
+konkani$\rightarrow$marathi & 106 & 74 & -32 \\
+sindhi$\rightarrow$punjabi & 79 & 14 & -65 \\
+hindi$\rightarrow$urdu & 60 & 39 & -21 \\
+santali$\rightarrow$bengali & 54 & 10 & -44 \\
+dogri$\rightarrow$punjabi & 53 & 44 & -9 \\
+\midrule
+bodo$\rightarrow$manipuri & 39 & 45 & +6 \\
+\bottomrule
+\end{tabular}
+\caption{Confusion-pair count changes from untuned baseline to DANN. Negative $\Delta$ is an improvement (fewer errors).}
+\label{tab:confusion-delta}
+\end{table}
 
 \begin{figure*}[t]
     \centering
@@ -197,6 +235,7 @@ We report the exact run IDs and artifacts used in analysis (\texttt{reports/arti
     \item Best-checkpoint loading enabled; mitigation runs selected with macro-F1 criterion.
     \item Speaker diagnostics and confusion matrices generated for every final compared run.
 \end{itemize}
+For Mitigation 3B and Mitigation 4, summary metrics in this report are taken from archived project reports in \texttt{reports/} because the corresponding full run directories are not present in the current branch snapshot.
 These controls reduce accidental variance and support a fair mitigation comparison.
 
 \FloatBarrier
