@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+"""Training pipeline for Indic spoken language identification.
+
+This file supports standard fine-tuning and an optional DANN setup for
+speaker-bias mitigation, plus diagnostics (confusion, per-language, speaker,
+and t-SNE exports).
+"""
+
 import csv
 import inspect
 import json
@@ -45,6 +52,8 @@ except ImportError:  # Optional if HF login is not needed.
 # =========================
 @dataclass
 class TrainConfig:
+    """Runtime configuration shared by training, evaluation, and diagnostics."""
+
     model_id: str = "utter-project/mHuBERT-147"
     dataset_name: str = "badrex/nnti-dataset-full"
     sample_rate: int = 16000
@@ -114,15 +123,18 @@ CFG = TrainConfig()
 
 
 def _default_run_name(cfg: TrainConfig) -> str:
+    """Build a deterministic run name from model, learning rate, and timestamp."""
     model_slug = cfg.model_id.replace("/", "-")
     return f"SLID_{model_slug}_{cfg.learning_rate}_{cfg.timestamp}"
 
 
 def slugify_label(label: str) -> str:
+    """Normalize label text so it is safe for metric keys and CSV headers."""
     return re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
 
 
 def set_all_seeds(seed: int) -> None:
+    """Set all available RNG seeds used by this training pipeline."""
     set_seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -131,6 +143,7 @@ def set_all_seeds(seed: int) -> None:
 
 
 def print_device_info() -> None:
+    """Print the active compute backend details for quick run traceability."""
     print("Check if GPU available:")
     cuda_available = torch.cuda.is_available()
     print(f"torch.cuda.is_available(): {cuda_available}")
@@ -141,6 +154,7 @@ def print_device_info() -> None:
 
 
 def maybe_login_hf(cfg: TrainConfig) -> None:
+    """Login to Hugging Face only when enabled and token/package are available."""
     if not cfg.hf_login_from_env:
         return
 
@@ -157,6 +171,7 @@ def maybe_login_hf(cfg: TrainConfig) -> None:
 
 
 def maybe_setup_wandb(cfg: TrainConfig) -> bool:
+    """Initialize W&B if configured and credentials are present."""
     if not cfg.report_to_wandb:
         print("W&B logging disabled by config.")
         return False
@@ -181,17 +196,21 @@ def maybe_setup_wandb(cfg: TrainConfig) -> bool:
 
 
 def infer_input_features_key(model_id: str) -> str:
+    """Return model input key expected by the selected backbone."""
     if model_id == "facebook/w2v-bert-2.0":
         return "input_features"
     return "input_values"
 
 
 class AudioDataCollator:
+    """Pad variable-length audio features and assemble label tensors."""
+
     def __init__(self, feature_extractor, input_features_key: str):
         self.feature_extractor = feature_extractor
         self.input_features_key = input_features_key
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
+        """Build one trainer batch from encoded dataset items."""
         batch = {
             self.input_features_key: [f[self.input_features_key] for f in features],
             "attention_mask": [f["attention_mask"] for f in features],
@@ -206,6 +225,8 @@ class AudioDataCollator:
 
 
 class GradientReversalFunction(torch.autograd.Function):
+    """Autograd primitive for gradient reversal used in DANN."""
+
     @staticmethod
     def forward(ctx, x: torch.Tensor, lambda_: float) -> torch.Tensor:
         ctx.lambda_ = float(lambda_)
@@ -217,10 +238,13 @@ class GradientReversalFunction(torch.autograd.Function):
 
 
 def grad_reverse(x: torch.Tensor, lambda_: float) -> torch.Tensor:
+    """Apply gradient reversal in forward pass."""
     return GradientReversalFunction.apply(x, lambda_)
 
 
 class DANNForAudioClassification(nn.Module):
+    """Shared encoder with language head + adversarial speaker head."""
+
     def __init__(
         self,
         *,
@@ -238,6 +262,7 @@ class DANNForAudioClassification(nn.Module):
         )
 
     def _pool(self, sequence_output: torch.Tensor, attention_mask: Optional[torch.Tensor]) -> torch.Tensor:
+        """Mean-pool frame features, respecting attention mask when available."""
         if sequence_output.ndim != 3:
             return sequence_output
         if attention_mask is None:
@@ -258,6 +283,7 @@ class DANNForAudioClassification(nn.Module):
         grl_lambda: float = 1.0,
         **_: Any,
     ) -> Dict[str, torch.Tensor]:
+        """Return language logits and speaker logits for DANN loss computation."""
         encoder_inputs: Dict[str, torch.Tensor] = {}
         if input_values is not None:
             encoder_inputs["input_values"] = input_values
@@ -288,6 +314,8 @@ class DANNForAudioClassification(nn.Module):
 
 
 class DANNTrainer(Trainer):
+    """Custom Trainer that optimizes language loss plus adversarial speaker loss."""
+
     def __init__(
         self,
         *args: Any,
@@ -302,14 +330,17 @@ class DANNTrainer(Trainer):
         self.dann_use_lambda_schedule = bool(dann_use_lambda_schedule)
 
     def _current_grl_lambda(self) -> float:
+        """Return current GRL scale; optionally applies the standard ramp schedule."""
         if not self.dann_use_lambda_schedule:
             return self.dann_grl_lambda
         max_steps = max(1, int(getattr(self.state, "max_steps", 0) or 1))
         progress = float(getattr(self.state, "global_step", 0)) / max_steps
+        # Classic DANN ramp-up to avoid strong adversarial pressure too early.
         schedule = 2.0 / (1.0 + math.exp(-10.0 * progress)) - 1.0
         return self.dann_grl_lambda * schedule
 
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):  # type: ignore[override]
+        """Compute DANN loss with language objective always active."""
         labels = inputs.get("labels")
         speaker_labels = inputs.get("speaker_labels")
         outputs = model(**inputs, grl_lambda=self._current_grl_lambda())
@@ -320,6 +351,7 @@ class DANNTrainer(Trainer):
 
         speaker_loss = None
         if model.training and speaker_labels is not None:
+            # -100 marks missing/unmapped speaker IDs and must be ignored.
             valid = speaker_labels >= 0
             if torch.any(valid):
                 speaker_logits = outputs["speaker_logits"]
@@ -335,6 +367,8 @@ class DANNTrainer(Trainer):
 
 
 class WaveformAugmenter:
+    """Lightweight waveform augmentation (speed perturbation + Gaussian noise)."""
+
     def __init__(self, cfg: TrainConfig, sample_rate: int):
         self.cfg = cfg
         self.sample_rate = sample_rate
@@ -353,6 +387,7 @@ class WaveformAugmenter:
         if not self.cfg.enable_train_augmentation:
             return waveform
 
+        # Deterministic per-sample RNG keeps augmentation reproducible across runs.
         rng = np.random.default_rng(self.cfg.seed + int(sample_index))
         if rng.random() > self.cfg.augmentation_prob:
             return waveform
@@ -394,6 +429,8 @@ def make_preprocess_function(
     augmenter: Optional[WaveformAugmenter] = None,
     apply_augmentation: bool = False,
 ):
+    """Create dataset map() function that extracts model inputs and labels."""
+
     def preprocess_function(examples, indices=None):
         audio_arrays: List[np.ndarray] = []
         example_indices = indices if indices is not None else [0] * len(examples["audio_filepath"])
@@ -425,6 +462,7 @@ def make_preprocess_function(
 
 
 def make_compute_metrics(int_to_str: Dict[int, str]):
+    """Build metric callback with global and per-language validation metrics."""
     label_ids_sorted = sorted(int_to_str.keys())
 
     def compute_metrics(eval_pred):
@@ -452,6 +490,7 @@ def pool_sequence_representation(
     last_hidden_state: torch.Tensor,
     attention_mask: Optional[torch.Tensor],
 ) -> torch.Tensor:
+    """Mean-pool sequence output to a single vector per sample."""
     if last_hidden_state.ndim != 3:
         return last_hidden_state
     if attention_mask is None:
@@ -473,6 +512,7 @@ def extract_last_layer_representations(
     data_collator,
     batch_size: int,
 ) -> np.ndarray:
+    """Extract pooled last-layer representations for all items in a split."""
     dataloader = DataLoader(
         dataset_encoded,
         batch_size=max(1, batch_size),
@@ -549,6 +589,7 @@ def sample_indices_for_tsne(
     max_samples: int,
     seed: int,
 ) -> np.ndarray:
+    """Sample indices for t-SNE with class-aware coverage under sample budget."""
     n = len(languages)
     if max_samples <= 0 or n <= max_samples:
         return np.arange(n, dtype=np.int64)
@@ -558,6 +599,7 @@ def sample_indices_for_tsne(
     unique = sorted(set(languages))
     selected: List[int] = []
 
+    # First pass: roughly stratified sampling by language.
     quota = max(1, max_samples // max(1, len(unique)))
     for label in unique:
         label_idx = np.where(labels == label)[0]
@@ -567,6 +609,7 @@ def sample_indices_for_tsne(
             selected.extend(picked.tolist())
 
     if len(selected) < max_samples:
+        # Second pass: fill remaining slots from the unused pool.
         remaining = np.setdiff1d(np.arange(n, dtype=np.int64), np.array(selected, dtype=np.int64), assume_unique=False)
         extra_take = min(len(remaining), max_samples - len(selected))
         if extra_take > 0:
@@ -585,6 +628,7 @@ def run_tsne_and_save(
     output_dir: Path,
     cfg: TrainConfig,
 ) -> None:
+    """Run t-SNE projection and save CSV + language/speaker visualization plots."""
     if representations.size == 0:
         print("t-SNE skipped: empty representation tensor.")
         return
@@ -612,6 +656,7 @@ def run_tsne_and_save(
         learning_rate="auto",
         random_state=cfg.tsne_random_state,
     )
+    # t-SNE is fit only on the sampled validation subset.
     coords = tsne.fit_transform(reps)
 
     output_csv = output_dir / "tsne_validation_points.csv"
@@ -673,6 +718,7 @@ def run_tsne_and_save(
 
 
 def write_confusion_matrix_csv(path: Path, cm: np.ndarray, label_names: List[str]) -> None:
+    """Save confusion matrix to CSV for reproducible post-hoc analysis."""
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["true\\pred"] + label_names)
@@ -681,6 +727,7 @@ def write_confusion_matrix_csv(path: Path, cm: np.ndarray, label_names: List[str
 
 
 def plot_confusion_matrix(path: Path, cm: np.ndarray, label_names: List[str], title: str) -> None:
+    """Render and save confusion matrix heatmap."""
     import matplotlib.pyplot as plt
 
     fig_w = max(10, int(len(label_names) * 0.55))
@@ -705,6 +752,7 @@ def compute_per_language_rows(
     refs: np.ndarray,
     int_to_str: Dict[int, str],
 ) -> List[Dict[str, Any]]:
+    """Aggregate per-language sample count, correct count, and accuracy."""
     rows: List[Dict[str, Any]] = []
     for label_id in sorted(int_to_str):
         label_name = int_to_str[label_id]
@@ -725,6 +773,7 @@ def compute_per_language_rows(
 
 
 def write_rows_csv(path: Path, rows: List[Dict[str, Any]], fieldnames: List[str]) -> None:
+    """Write row dictionaries to CSV with a fixed field order."""
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -741,6 +790,7 @@ def run_speaker_diagnostic(
     cfg: TrainConfig,
     output_dir: Path,
 ) -> None:
+    """Compute speaker-level validation diagnostics and leakage warnings."""
     valid_speakers = valid_ds_encoded["speaker_id"]
     valid_languages = valid_ds_encoded["language"]
 
@@ -787,6 +837,7 @@ def run_speaker_diagnostic(
     valid_count = max(1, len(valid_speaker_set))
     overlap_ratio = overlap_count / valid_count
 
+    # "Seen" means speaker ID exists in train split; validation should ideally be unseen.
     seen_mask = np.array([str(s) in train_speaker_ids for s in valid_speakers], dtype=bool)
     unseen_mask = ~seen_mask
 
@@ -837,6 +888,7 @@ def run_speaker_diagnostic(
 
 
 def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str) -> TrainingArguments:
+    """Build TrainingArguments with compatibility guards across HF versions."""
     ta_sig = inspect.signature(TrainingArguments.__init__).parameters
 
     kwargs: Dict[str, Any] = {
@@ -873,8 +925,8 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
-    # Ensure eval/predict metrics are computed against language labels.
-    # DANN still consumes `speaker_labels` inside custom compute_loss.
+    # Always compute eval/predict metrics with language labels only.
+    # `speaker_labels` are consumed only inside the DANN loss.
     if "label_names" in ta_sig:
         kwargs["label_names"] = ["labels"]
 
@@ -887,6 +939,7 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
     else:
+        # transformers renamed this arg in newer versions.
         kwargs["eval_strategy"] = "steps"
 
     return TrainingArguments(**kwargs)
@@ -903,6 +956,7 @@ def build_trainer(
     data_collator,
     compute_metrics,
 ):
+    """Instantiate Trainer or DANNTrainer with consistent kwargs."""
     trainer_sig = inspect.signature(Trainer.__init__).parameters
     kwargs: Dict[str, Any] = {
         "model": model,
@@ -916,6 +970,7 @@ def build_trainer(
     if "processing_class" in trainer_sig:
         kwargs["processing_class"] = feature_extractor
     elif "tokenizer" in trainer_sig:
+        # Backward compatibility for older transformers Trainer APIs.
         kwargs["tokenizer"] = feature_extractor
 
     trainer_cls = DANNTrainer if cfg.enable_dann else Trainer
@@ -933,10 +988,7 @@ def initialize_lazy_parameters_with_sample(
     dataset_encoded,
     data_collator,
 ) -> None:
-    """
-    Initialize LazyModule parameters (for example, LazyLinear in DANN heads)
-    before Trainer inspects parameter counts.
-    """
+    """Warm up LazyLinear parameters before Trainer counts model parameters."""
     has_uninitialized = any(
         isinstance(p, torch.nn.parameter.UninitializedParameter)
         for p in model.parameters()
@@ -955,6 +1007,7 @@ def initialize_lazy_parameters_with_sample(
     model_was_training = model.training
     model.eval()
     with torch.no_grad():
+        # One forward pass materializes LazyLinear shapes from real input.
         model(**batch)
     if model_was_training:
         model.train()
@@ -970,6 +1023,8 @@ def initialize_lazy_parameters_with_sample(
 
 
 def main() -> None:
+    """Run full train/eval/predict pipeline and export diagnostics."""
+    # 1) Run setup
     cfg = CFG
     cfg.run_name = cfg.run_name or _default_run_name(cfg)
     current_time_str = cfg.timestamp
@@ -983,6 +1038,7 @@ def main() -> None:
     wandb_enabled = maybe_setup_wandb(cfg)
     report_to = "wandb" if wandb_enabled else "none"
 
+    # 2) Load raw dataset and feature extractor
     feature_extractor = AutoFeatureExtractor.from_pretrained(
         cfg.model_id,
         do_normalize=True,
@@ -999,6 +1055,7 @@ def main() -> None:
     train_ds = train_ds.cast_column("audio_filepath", Audio(sampling_rate=cfg.sample_rate))
     valid_ds = valid_ds.cast_column("audio_filepath", Audio(sampling_rate=cfg.sample_rate))
 
+    # 3) Build label mappings (and speaker mapping for DANN)
     input_features_key = infer_input_features_key(cfg.model_id)
 
     label_list = sorted(train_ds.unique("language"))
@@ -1018,6 +1075,7 @@ def main() -> None:
             f"lambda_schedule={cfg.dann_use_lambda_schedule}"
         )
 
+    # 4) Preprocess datasets (optional train augmentation only)
     augmenter: Optional[WaveformAugmenter] = None
     apply_train_aug = False
     if cfg.enable_train_augmentation:
@@ -1071,6 +1129,7 @@ def main() -> None:
         with_indices=True,
     )
 
+    # 5) Build model + trainer
     model_config = AutoConfig.from_pretrained(cfg.model_id)
     model_config.num_labels = num_labels
     model_config.label2id = str_to_int
@@ -1120,9 +1179,10 @@ def main() -> None:
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
-    # Hard-guard for DANN runs: metrics must use language labels, not speaker_labels.
+    # Keep metric computation tied to language labels.
     trainer.label_names = ["labels"]
 
+    # 6) Train and save artifacts
     print("Train loop starting...")
     train_result = trainer.train()
     trainer.save_model(str(run_dir))
@@ -1130,6 +1190,7 @@ def main() -> None:
     trainer.save_state()
     trainer.save_metrics("train", train_result.metrics)
 
+    # 7) Final evaluation and prediction pass
     print("Final evaluation starting...")
     final_eval_metrics = trainer.evaluate(eval_dataset=valid_ds_encoded)
     trainer.save_metrics("eval", final_eval_metrics)
@@ -1144,6 +1205,7 @@ def main() -> None:
     refs = pred_output.label_ids
     label_names = [int_to_str[i] for i in range(num_labels)]
 
+    # 8) Export diagnostics: per-language, confusion, speaker, t-SNE
     per_language_rows = compute_per_language_rows(preds, refs, int_to_str)
     if cfg.save_per_language_csv:
         per_lang_path = diagnostics_dir / "per_language_accuracy_validation.csv"
