@@ -13,21 +13,22 @@
 \usepackage{array}
 \usepackage{amsmath}
 \usepackage{enumitem}
+\usepackage{float}
+\usepackage{cuted}
 \setlist[itemize]{noitemsep,topsep=2pt,parsep=0pt,partopsep=0pt}
 
 \setlength\titlebox{5cm}
 
 \title{Language Identification from Audio with Speaker Bias Mitigation.}
 
-\author{Prem Kumar Vairamuthu (7075922), 
-Harjit Ravikanth Lakshmi (7075899), 
+\author{Prem Kumar Vairamuthu (7075922) \quad
+Harjit Ravikanth Lakshmi (7075899) \quad
 Hemashruthi Durairaj (7084037) \\
 Department of Computer Science, Saarland University, Saarbrücken, Germany \\
-\texttt{prva00001@stud.uni-saarland.de, hary00001@stud.uni-saarland.de, hedu00002@stud.uni-saarland.de}}
+{\footnotesize\texttt{prva00001@stud.uni-saarland.de, hary00001@stud.uni-saarland.de, hedu00002@stud.uni-saarland.de}}}
 
 \begin{document}
 \maketitle
-\nocite{pytorchaudioaugtutorial}
 
 \begin{abstract}
 In this project, we develop a system that classifies speech into 22 Indian languages using the badrex/nnti-dataset-full dataset. A major challenge is
@@ -41,7 +42,7 @@ Results show clear bias reduction and weak-class recovery, but not complete remo
 \section*{1 Introduction}
 This project focuses on language identification with significant speaker variation. The main challenge is learning language features from a small number of training speakers while generalizing to unseen validation speakers.
 
-Implementation uses PyTorch \citep{paszke2019pytorch}, torchaudio augmentation practice from the PyTorch Audio tutorial, Hugging Face Transformers/Datasets \citep{wolf2020transformers}, scikit-learn \citep{pedregosa2011scikit}, Matplotlib \citep{hunter2007matplotlib}, MMS \citep{pratap2023mms}, wav2vec2 \citep{baevski2020wav2vec2}, HuBERT \citep{hsu2021hubert}, Domain-Adversarial Neural Network (DANN) \citep{ganin2016dann}, and t-SNE \citep{maaten2008tsne}.
+Implementation uses PyTorch \citep{paszke2019pytorch}, Hugging Face Transformers/Datasets \citep{wolf2020transformers}, the NNTI dataset card \citep{badr2026dataset}, MMS resources \citep{pratap2023mms,facebookmmsmodelcard}, PyTorch Audio augmentation practice \citep{pytorchaudioaugtutorial}, scikit-learn \citep{pedregosa2011scikit}, Matplotlib \citep{hunter2007matplotlib}, wav2vec2 \citep{baevski2020wav2vec2}, HuBERT \citep{hsu2021hubert}, Domain-Adversarial Neural Network (DANN) \citep{ganin2014dann}, and t-SNE \citep{maaten2008tsne}.
 
 \section*{2 Dataset}
 We use \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset}. Core split statistics:
@@ -245,6 +246,20 @@ Mitigation 1 $\rightarrow$ DANN & +0.0188 & +0.0558 \\
 Class-level behavior shows both improvements and tradeoffs: unseen-speaker accuracy improves from 0.4676 to 0.5576, weak-class mean accuracy increases from 0.0227 to 0.3547. However, some previously strong classes still regress (for example nepali and punjabi vs Mitigation 1).
 Overall, the mitigation methods reduce speaker bias and improve performance on weak languages, but they do not completely remove speaker-related information.
 
+\clearpage
+\begin{strip}
+\vspace*{-0.8\baselineskip}
+    \centering
+    \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_mitigation1.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_dann.png}
+    \captionof{figure}{Validation confusion matrices: untuned reference (left), Mitigation 1 (middle), DANN improved (right).}
+    \label{fig:confusions}
+\vspace*{-0.4\baselineskip}
+\end{strip}
+
 \subsection*{6.3 Confusion Patterns}
 Most frequent confused langugaes are:
 \begin{itemize}
@@ -252,17 +267,6 @@ Most frequent confused langugaes are:
     \item \texttt{sindhi$\rightarrow$punjabi}
     \item \texttt{hindi$\rightarrow$urdu}
 \end{itemize}
-
-\begin{figure*}[!htbp]
-    \centering
-    \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
-    \hfill
-    \includegraphics[width=0.31\textwidth]{figures/confusion_mitigation1.png}
-    \hfill
-    \includegraphics[width=0.31\textwidth]{figures/confusion_dann.png}
-    \caption{Validation confusion matrices: untuned reference (left), Mitigation 1 (middle), DANN improved (right).}
-    \label{fig:confusions}
-\end{figure*}
 
 These confusions occur mainly because the languages share similar linguistic and acoustic characteristics. 
 As shown in Table~\ref{tab:mitigation_confusions}, DANN reduces dominant confusions, but not all.
@@ -277,6 +281,7 @@ Pattern-specific interpretation:
 
 The results also show that DANN reduces dominant confusions compared to the untuned mHuBERT model including (\texttt{sindhi$\rightarrow$punjabi}, \texttt{santali$\rightarrow$bengali}, \texttt{odia$\rightarrow$bengali}, \texttt{hindi$\rightarrow$urdu}, \texttt{konkani$\rightarrow$marathi}). 
 Consequently, some alternative confusion channels increase (for example \texttt{bodo$\rightarrow$manipuri} and \texttt{nepali$\rightarrow$manipuri} when compared with Mitigation 1), indicating that the model still struggles with closely related languages.
+ \FloatBarrier
 
 \subsection*{6.4 Representation Analysis (t-SNE)}
 t-SNE is applied to last-layer validation embeddings.
@@ -289,6 +294,14 @@ For DANN:
     \item Silhouette (speaker top-k): -0.0992
     \item kNN speaker purity@5: 0.3433
 \end{itemize}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_language.png}
+    \hfill
+    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_speaker.png}
+    \caption{DANN t-SNE on validation embeddings: by language (left), by speaker (right).}
+    \label{fig:tsne_dann}
+\end{figure}
 
 Interpretation: speaker structure is weakened but not completely removed.
 The negative speaker silhouette that the model no longer groups samples strongly by speaker,
@@ -301,16 +314,7 @@ This result is also supported by other diagnostics:
 \end{itemize}
 
 So, the improved model is more speaker-robust and language-discriminative than earlier mitigations, but it still encodes some speaker information.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_language.png}
-    \hfill
-    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_speaker.png}
-    \caption{DANN t-SNE on validation embeddings: by language (left), by speaker (right).}
-    \label{fig:tsne_dann}
-\end{figure}
-
+\FloatBarrier
 
 \section*{7 Conclusion}
 Tuned mHuBERT provides a strong reference model without bias mitigation. The results show that mitigation performance depends on the training setup. Mild data augmentation improves the model, while very strong augmentation can reduce performance. The best final model is DANN, which achieves the highest accuracy and improves performance on weaker languages under unseen-speaker validation. The analysis shows that speaker bias is reduced, but some difficult language confusions and speaker-related signals still remain.
