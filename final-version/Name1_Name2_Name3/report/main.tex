@@ -34,7 +34,7 @@ Department of Computer Science, Saarland University, Saarbrücken, Germany \\
 \begin{abstract}
 In this project, we develop a system that classifies speech into 22 Indian languages using the badrex/nnti-dataset-full dataset. A major challenge is
 speaker bias since each language only has five speakers. We first reproduce the baseline model and apply different pre-trained speech models and
-hyperparameter tuning to improve performance. To reduce speaker bias, we use data-centric augmentation and model-based adversarial training (DANN). 
+hyperparameter tuning to improve performance. To reduce speaker bias, we use data-centric augmentation and model-based adversarial training. 
 We then evaluate multiple speaker bias mitigation variants and find that DANN gives the best result: 0.5576 accuracy and 0.5426 macro-F1. 
 We also analyze bias source, confusion patterns, and last-layer t-SNE behavior. 
 Results show clear bias reduction and improvement in weak-class performance, but speaker information is not completely removed.
@@ -43,7 +43,7 @@ Results show clear bias reduction and improvement in weak-class performance, but
 \section*{1 Introduction}
 This project focuses on language identification with significant speaker variation. The main challenge is learning language features from a small number of training speakers while generalizing to unseen validation speakers.
 
-Implementation uses PyTorch \citep{paszke2019pytorch}, Hugging Face Transformers/Datasets \citep{wolf2020transformers}, the NNTI dataset card \citep{badr2026dataset}, MMS resources \citep{pratap2023mms,facebookmmsmodelcard}, PyTorch Audio augmentation practice \citep{pytorchaudioaugtutorial}, scikit-learn \citep{pedregosa2011scikit}, Matplotlib \citep{hunter2007matplotlib}, wav2vec2 \citep{baevski2020wav2vec2}, HuBERT \citep{hsu2021hubert}, Domain-Adversarial Neural Network (DANN) \citep{ganin2014dann}, and t-SNE \citep{maaten2008tsne}.
+Implementation uses PyTorch \citep{paszke2019pytorch}, Hugging Face Transformers/Datasets \citep{wolf2020transformers}, MMS resources \citep{pratap2023mms,facebookmmsmodelcard}, PyTorch Audio augmentation practice \citep{pytorchaudioaugtutorial}, scikit-learn \citep{pedregosa2011scikit}, Matplotlib \citep{hunter2007matplotlib}, wav2vec2 \citep{baevski2020wav2vec2}, HuBERT \citep{hsu2021hubert}, Domain-Adversarial Neural Network (DANN) \citep{ganin2014dann}, and t-SNE \citep{maaten2008tsne}.
 
 \section*{2 Dataset}
 We use \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset}. Core split statistics:
@@ -75,7 +75,7 @@ We report:
     \item Class-level metric: per-language validation accuracy.
     \item Error structure: off-diagonal confusion pairs from confusion matrix.
     \item Speaker diagnostics: overlap count and unseen-speaker accuracy.
-    \item Representation diagnostics: last-layer t-SNE (where artifacts are available).
+    \item Representation diagnostics: last-layer t-SNE.
 \end{itemize}
 
 Macro-F1 is prioritized over accuracy for evaluating speaker-bias mitigation.
@@ -86,7 +86,7 @@ The baseline-improvement pipeline follows two stages:
 \begin{itemize}
     \item \textbf{Baseline reproduction}: reproduce the baseline by fine-tuning the \texttt{facebook/mms-300m} model using the provided starter script, aiming to reach the 31.96\% top-1 accuracy
     
-    \item \textbf{Improvement stage}: we experiment with other pretrained speech models and better hyperparameter tuning (e.g., learning rate, batch size, warmup steps, and training schedules). This results in a tuned mHuBERT model used as the reference for later experiments.
+    \item \textbf{Improvement stage}: we experiment with other pre-trained speech models and hyperparameter tuning (e.g., learning rate, batch size, warmup steps, and training schedules). This results in a tuned mHuBERT model used as the reference for later experiments.
 \end{itemize}
 
 To exceed the baseline performance, we increased the number of training epochs, enabled dropout, set the learning rate =  \(3\times10^{-5}\), and used (\texttt{group\_by\_length=True})
@@ -121,7 +121,7 @@ In baseline reproduction, the MMS-300m model achieved 0.3224 accuracy. The untun
 Compared to untuned mHuBERT, tuning improves the accuracy by +0.0594 and the macro-F1 by +0.0607 and this tuned model is used as the reference for mitigation experiments.
 \section*{5 Speaker-Bias Mitigation}
 \subsection*{5.1 Methods}
-We used both data-centric and model-based mitigation. We also tested several intermediate variants (Mitigation 2, 3A, 3B, and 4) to understand the trade-offs.
+We used both data-centric augmentation and model-based adversarial mitigation. We also tested several intermediate variants (Mitigation 2, 3A, 3B, and 4) to understand the trade-offs.
 
 \textbf{Data-centric Augmentation Mitigation:}
 \begin{itemize}
@@ -303,7 +303,7 @@ For DANN:
     \label{fig:tsne_dann}
 \end{figure}
 
-Interpretation: speaker structure is weakened but not completely removed.
+Interpretation: speaker bias is weakened but not completely removed.
 The negative speaker silhouette indicates reduced speaker clustering,
 while non-zero kNN purity shows that some speaker identity still remains in embedding neighborhoods.
 
@@ -317,7 +317,7 @@ So, the improved model is more speaker-robust and language-discriminative than e
 \FloatBarrier
 
 \section*{7 Conclusion}
-Tuned mHuBERT provides a strong reference model without bias mitigation. The results show that mitigation performance depends on the training setup. Mild data augmentation improves the model, while very strong augmentation can reduce performance. The best final model is DANN, which achieves the highest accuracy and improves performance on weaker languages under unseen-speaker validation. The analysis shows that speaker bias is reduced, but some difficult language confusions and speaker-related signals still remain.
+The tuned mHuBERT model provides a strong reference baseline prior to bias mitigation. The results show that mitigation performance depends on the training setup. Mild data augmentation improves the model, while very strong augmentation can reduce performance. The best final model is DANN, which achieves the highest accuracy and improves performance on weaker languages under unseen-speaker validation. The analysis shows that speaker bias is reduced, but some difficult language confusions and speaker-related signals still remain.
 
 \renewcommand{\refname}{Reference}
 \bibliographystyle{acl_natbib}
