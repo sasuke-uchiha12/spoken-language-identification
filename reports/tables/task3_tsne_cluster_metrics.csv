@@ -1,0 +1,2 @@
+run_key,run_label,run_id,n_points_tsne,n_language_labels,silhouette_language,n_speaker_topk_points,n_speaker_topk_labels,silhouette_speaker_topk,knn_speaker_purity_at_5
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,2200,22,0.004674778493606721,60,12,-0.09924514116891622,0.3433333333333333

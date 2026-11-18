@@ -1,0 +1,61 @@
+run_key,run_label,run_id,rank,true_language,pred_language,count
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,1,konkani,marathi,106
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,2,sindhi,punjabi,79
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,3,hindi,urdu,60
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,4,santali,bengali,54
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,5,dogri,punjabi,53
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,6,bodo,manipuri,39
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,7,santali,bodo,36
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,8,sindhi,gujarati,35
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,9,bengali,odia,34
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,10,maithili,gujarati,34
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,11,hindi,punjabi,26
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,12,odia,bengali,26
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,13,maithili,bengali,24
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,14,bengali,gujarati,23
+baseline_untuned,Baseline (untuned),SLID_utter-project-mHuBERT-147_1e-05_20260301_094826,15,nepali,bodo,23
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,1,sindhi,punjabi,103
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,2,konkani,marathi,97
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,3,hindi,urdu,77
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,4,dogri,punjabi,76
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,5,bengali,odia,39
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,6,maithili,gujarati,37
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,7,santali,bengali,34
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,8,bodo,manipuri,29
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,9,santali,bodo,28
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,10,maithili,odia,26
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,11,hindi,punjabi,25
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,12,maithili,bengali,23
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,13,odia,bengali,23
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,14,marathi,sanskrit,22
+tuned_ref,Tuned reference (no mitigation),SLID_utter-project-mHuBERT-147_1e-05_20260301_150502,15,odia,telugu,19
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,1,konkani,marathi,106
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,2,sindhi,punjabi,102
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,3,dogri,punjabi,71
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,4,hindi,urdu,68
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,5,maithili,gujarati,49
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,6,odia,bengali,45
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,7,santali,bengali,40
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,8,bodo,manipuri,39
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,9,maithili,bengali,29
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,10,hindi,punjabi,23
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,11,santali,bodo,22
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,12,nepali,manipuri,18
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,13,urdu,punjabi,18
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,14,kannada,tamil,17
+mitigation1,Mitigation 1 (data-centric),SLID_utter-project-mHuBERT-147_1e-05_20260302_111613,15,sindhi,gujarati,16
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,1,konkani,marathi,74
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,2,bodo,manipuri,45
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,3,dogri,punjabi,44
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,4,hindi,urdu,39
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,5,nepali,manipuri,33
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,6,maithili,gujarati,30
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,7,sindhi,gujarati,28
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,8,bengali,odia,26
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,9,kannada,telugu,26
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,10,hindi,maithili,24
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,11,bengali,gujarati,21
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,12,malayalam,tamil,21
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,13,urdu,hindi,19
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,14,hindi,gujarati,17
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,15,nepali,odia,17

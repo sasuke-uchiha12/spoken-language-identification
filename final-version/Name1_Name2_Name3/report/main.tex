@@ -1,0 +1,326 @@
+\pdfoutput=1
+\documentclass[11pt]{article}
+\usepackage{eacl2023}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{placeins}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{cuted}
+\setlist[itemize]{noitemsep,topsep=2pt,parsep=0pt,partopsep=0pt}
+\raggedbottom
+
+\setlength\titlebox{5cm}
+
+\title{Language Identification from Audio with Speaker Bias Mitigation.}
+
+\author{Prem Kumar Vairamuthu (7075922) \quad
+Harjit Ravikanth Lakshmi (7075899) \quad
+Hemashruthi Durairaj (7084037) \\
+Department of Computer Science, Saarland University, Saarbrücken, Germany \\
+{\footnotesize\texttt{prva00001@stud.uni-saarland.de, hary00001@stud.uni-saarland.de, hedu00002@stud.uni-saarland.de}}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In this project, we develop a system that classifies speech into 22 Indian languages using the badrex/nnti-dataset-full dataset. A major challenge is
+speaker bias since each language only has five speakers. We first reproduce the baseline model and apply different pre-trained speech models and
+hyperparameter tuning to improve performance. To reduce speaker bias, we use data-centric augmentation and model-based adversarial training. 
+We then evaluate multiple speaker bias mitigation variants and find that DANN gives the best result: 0.5576 accuracy and 0.5426 macro-F1. 
+We also analyze bias source, confusion patterns, and last-layer t-SNE behavior. 
+Results show clear bias reduction and improvement in weak-class performance, but speaker information is not completely removed.
+\end{abstract}
+
+\section*{1 Introduction}
+This project focuses on language identification with significant speaker variation. The main challenge is learning language features from a small number of training speakers while generalizing to unseen validation speakers.
+
+Implementation uses PyTorch \citep{paszke2019pytorch}, Hugging Face Transformers/Datasets \citep{wolf2020transformers}, MMS resources \citep{pratap2023mms,facebookmmsmodelcard}, PyTorch Audio augmentation practice \citep{pytorchaudioaugtutorial}, scikit-learn \citep{pedregosa2011scikit}, Matplotlib \citep{hunter2007matplotlib}, wav2vec2 \citep{baevski2020wav2vec2}, HuBERT \citep{hsu2021hubert}, Domain-Adversarial Neural Network (DANN) \citep{ganin2014dann}, and t-SNE \citep{maaten2008tsne}.
+
+\section*{2 Dataset}
+We use \texttt{badrex/nnti-dataset-full} \citep{badr2026dataset}. Core split statistics:
+\begin{itemize}
+    \item Languages: 22
+    \item Train samples: 8689
+    \item Validation samples: 3300
+    \item Train unique speakers: 110
+    \item Validation unique speakers: 681
+    \item Train/validation speaker overlap: 0
+\end{itemize}
+
+The validation data comes from speakers that are different from those in the training data.
+
+\section*{3 Experiments}
+\subsection*{3.1 Experimental Setup}
+To keep comparisons fair, we use the same dataset split and fixed random seed and changed only intended components per run. Shared protocol:
+\begin{itemize}
+    \item Fixed split: same train/validation files across runs.
+    \item Fixed seed: 42.
+    \item Best-checkpoint loading enabled \texttt{load\_best\_model\_at\_end=True}.
+    \item Same diagnostics family: per-language accuracy, confusion matrix, speaker diagnostics.
+\end{itemize}
+
+\subsection*{3.2 Evaluation Metrics}
+We report:
+\begin{itemize}
+    \item Global metrics: validation accuracy, macro-F1, eval loss.
+    \item Class-level metric: per-language validation accuracy.
+    \item Error structure: off-diagonal confusion pairs from confusion matrix.
+    \item Speaker diagnostics: overlap count and unseen-speaker accuracy.
+    \item Representation diagnostics: last-layer t-SNE.
+\end{itemize}
+
+Macro-F1 is prioritized over accuracy for evaluating speaker-bias mitigation.
+
+\section*{4 Baseline Reproduction and Improvements}
+\subsection*{4.1 Methods}
+The baseline-improvement pipeline follows two stages:
+\begin{itemize}
+    \item \textbf{Baseline reproduction}: reproduce the baseline by fine-tuning the \texttt{facebook/mms-300m} model using the provided starter script, aiming to reach the 31.96\% top-1 accuracy
+    
+    \item \textbf{Improvement stage}: we experiment with other pre-trained speech models and hyperparameter tuning (e.g., learning rate, batch size, warmup steps, and training schedules). This results in a tuned mHuBERT model used as the reference for later experiments.
+\end{itemize}
+
+To exceed the baseline performance, we increased the number of training epochs, enabled dropout, set the learning rate =  \(3\times10^{-5}\), and used (\texttt{group\_by\_length=True})
+
+The main hyperparameter settings reported for this baseline-improvement stage are: effective batch control (per-device batch size around 16 with gradient accumulation), checkpointing policy (\texttt{load\_best\_model\_at\_end=True}) and model-selection metric (accuracy for the tuned no-mitigation reference) .
+These training settings significantly affect the final model performance.
+
+\subsection*{4.2 Experiments}
+We executed three experimental checkpoints in sequence: (i) baseline reproduction using MMS-300m model, (ii) untuned mHuBERT run, and (iii) tuned mHuBERT run. 
+This sequence helps us evaluate the impact of model selection and tuning before implementing bias-mitigation techniques.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{0.46\columnwidth}rrr@{}}
+\toprule
+Run & Acc & Macro-F1 & Eval Loss \\
+\midrule
+Assignment baseline (MMS-300m) & 0.3224 & -- & 3.0566 \\
+mHuBERT untuned & 0.4676 & 0.4142 & 2.2854 \\
+mHuBERT tuned & \textbf{0.5270} & \textbf{0.4748} & \textbf{2.1629} \\
+\bottomrule
+\end{tabular}
+\caption{Baseline and improvement experiment summary.}
+\label{tab:task1_summary}
+\end{table}
+\FloatBarrier
+
+\subsection*{4.3 Results}
+In baseline reproduction, the MMS-300m model achieved 0.3224 accuracy. The untuned mHuBERT run already exceeds this level with 0.4676, and tuned mHuBERT further improves to 0.5270 accuracy and 0.4748 macro-F1. 
+Compared to untuned mHuBERT, tuning improves the accuracy by +0.0594 and the macro-F1 by +0.0607 and this tuned model is used as the reference for mitigation experiments.
+\section*{5 Speaker-Bias Mitigation}
+\subsection*{5.1 Methods}
+We used both data-centric augmentation and model-based adversarial mitigation. We also tested several intermediate variants (Mitigation 2, 3A, 3B, and 4) to understand the trade-offs.
+
+\textbf{Data-centric Augmentation Mitigation:}
+\begin{itemize}
+    \item Mitigation 1: speed/noise ($p=0.30$, speed 0.97--1.03, noise std 0.0005--0.002).
+    \item Mitigation 2: gentler speed/noise ($p=0.25$, speed 0.98--1.02, noise std 0.0005--0.0015) with macro-F1 checkpointing.
+    \item Mitigation 3A: revert to M1 augmentation strength with macro-F1 checkpointing and more frequent eval/save steps (100/100).
+    \item Mitigation 3B: milder fallback from M3A ($p=0.28$, speed 0.975--1.025, noise std max 0.0018). 
+    \item Mitigation 4: all data-centric augmentation (speed/noise + pitch shift + spectral masking) with global augmentation gate and t-SNE export.
+\end{itemize}
+
+\textbf{Model-based Mitigation (DANN):}
+\begin{itemize}
+    \item Architecture: shared encoder with language and adversarial speaker heads.
+    \item Training logic: a gradient reversal layer forces the encoder to reduce speaker-identifiable information while preserving language-discriminative features.
+    \item Final settings: \texttt{speaker\_loss\_weight=0.1}, \texttt{grl\_lambda=1.0}, lambda schedule enabled, speaker-head dropout 0.1.
+    \item Run design: augmentation was disabled in the final DANN run to isolate the effect of adversarial mitigation from augmentation effects.
+\end{itemize}
+
+Encoder objective:
+\[
+\mathcal{L}_{enc} = \mathcal{L}_{lang} - \lambda \mathcal{L}_{speaker}.
+\]
+
+\subsection*{5.2 Experiments}
+We evaluated mitigation variants against the tuned mHuBERT model on the same dataset split and metrics. Table~\ref{tab:task2_summary} reports overall performance of the model across all languages, and Table~\ref{tab:mitigation_confusions} shows the most frequent language confusions pairs across untuned, tuned, mitigation-1, and DANN runs.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.47\columnwidth}rrr@{}}
+\toprule
+Run & Acc & Macro-F1 & Eval Loss \\
+\midrule
+Tuned ref (no mitigation) & 0.5270 & 0.4748 & 2.1629 \\
+Mitigation 1 & 0.5388 & 0.4868 & 2.1504 \\
+Mitigation 2 & 0.5279 & 0.4828 & 2.1385 \\
+Mitigation 3A & 0.4979 & 0.4561 & 2.1884 \\
+Mitigation 3B & 0.5276 & 0.4817 & 2.1456 \\
+Mitigation 4 & 0.5115 & 0.4664 & 2.2127 \\
+DANN (final improved) & \textbf{0.5576} & \textbf{0.5426} & \textbf{1.8815} \\
+\bottomrule
+\end{tabular}
+\caption{Mitigation experiments (validation split).}
+\label{tab:task2_summary}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Pair & Untuned & Tuned & Mitigation 1 & DANN \\
+\midrule
+konkani$\rightarrow$marathi & 106 & 97 & 106 & 74 \\
+sindhi$\rightarrow$punjabi & 79 & 103 & 102 & 14 \\
+hindi$\rightarrow$urdu & 60 & 77 & 68 & 39 \\
+dogri$\rightarrow$punjabi & 53 & 76 & 71 & 44 \\
+bodo$\rightarrow$manipuri & 39 & 29 & 39 & 45 \\
+odia$\rightarrow$bengali & 26 & 23 & 45 & 10 \\
+santali$\rightarrow$bengali & 54 & 34 & 40 & 10 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Confusion-pair counts across key runs.}
+\label{tab:mitigation_confusions}
+\end{table}
+
+
+
+\subsection*{5.3 Results}
+Overall, DANN is the strongest mitigation result: +0.0306 accuracy and +0.0678 macro-F1 over tuned mHuBERT model (no-mitigation), and +0.0188 accuracy and +0.0558 macro-F1 over Mitigation 1. Data-centric methods were useful but sensitive to augmentation strength. Mitigation 1 was the best data-centric variant, while mixed augmentation (Mitigation 4) underperformed.
+
+Confusion behavior also improved for several commonly confused language pairs. (Table~\ref{tab:mitigation_confusions}), especially \texttt{sindhi$\rightarrow$punjabi} and \texttt{hindi$\rightarrow$urdu}. Some pairs such as \texttt{konkani$\rightarrow$marathi} are still difficult, so the bias is reduced but not completely removed.
+
+Speaker-bias diagnostics show that these improvements are not caused by speaker leakage. The training and validation sets have no overlapping speakers (\texttt{overlap\_speaker\_count=0}). 
+Likewise, unseen-speaker accuracy increases from 0.4676 (untuned) to 0.5576 (DANN). The weak-class mean accuracy increased from 0.0227 to 0.3547, indicating an improvement in performance on previously weak classes. 
+
+\section*{6 Analysis}
+\subsection*{6.1 Bias Source and Learning Challenges}
+The bias source in this dataset is the limited speaker diversity in training data. The training set contains 110 speakers over 22 languages while the validation set contains 681 speakers with 3300 samples, and all validation speakers are unseen during training. 
+This creates a speaker bias problem because the model may learn speaker-specific characteristics such as (voice quality or speaking style) instead of learning the language itself.
+
+Learning from this biased data is difficult for two reasons. \textbf{First}, with few speakers per language, the encoder can partially fit speaker characteristics during training even though the validation speakers are different. 
+\textbf{Second}, it is harder for the model to accurately distinguish between related languages because many of them have similar prosodic and acoustic patterns. As a result, some languages remain weakly separated in the learned representation.
+
+Evidence from our experiments:
+\begin{itemize}
+    \item Untuned reference has near-zero classes (for example maithili 0.0000, konkani 0.0000, sindhi 0.0333).
+    \item Confusion matrix shows strong confusion between certain language pairs (for example konkani$\rightarrow$marathi and sindhi$\rightarrow$punjabi).
+    \item Validation is fully unseen-speaker (seen-speaker samples = 0, unseen-speaker samples = 3300), so weak performance cannot be explained by train/validation speaker overlap.
+\end{itemize}
+
+
+\subsection*{6.2 Mitigation Approach and Results}
+Our approach combines data-centric mitigation and model-based adversarial de-biasing to reduce speaker bias. 
+\begin{itemize}
+    \item Data-centric mitigation (especially Mitigation 1) improves robustness by breaking fixed speaker-style dependence.
+    \item DANN directly penalizes speaker-identifiable features in the shared encoder.
+\end{itemize}
+
+The results indicate strong but partial improvement. The overall results are shown in Table~\ref{tab:dann_impact}.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Comparison & $\Delta$Acc & $\Delta$Macro-F1 \\
+\midrule
+Untuned $\rightarrow$ DANN & +0.0900 & +0.1284 \\
+Tuned no-mitigation $\rightarrow$ DANN & +0.0306 & +0.0678 \\
+Mitigation 1 $\rightarrow$ DANN & +0.0188 & +0.0558 \\
+\bottomrule
+\end{tabular}
+\caption{Global impact of DANN versus reference runs.}
+\label{tab:dann_impact}
+\end{table}
+
+Class-level behavior shows both improvements and tradeoffs: unseen-speaker accuracy improves from 0.4676 to 0.5576, weak-class mean accuracy increases from 0.0227 to 0.3547. However, some previously strong classes still regress (for example nepali and punjabi vs Mitigation 1).
+Overall, the mitigation methods reduce speaker bias and improve performance on weak languages, but they do not completely remove speaker-related information.
+
+\clearpage
+\begin{strip}
+\vspace*{-0.8\baselineskip}
+    \centering
+    \includegraphics[width=0.31\textwidth]{figures/confusion_baseline_untuned.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_mitigation1.png}
+    \hfill
+    \includegraphics[width=0.31\textwidth]{figures/confusion_dann.png}
+    \captionof{figure}{Validation confusion matrices: untuned reference (left), Mitigation 1 (middle), DANN improved (right).}
+    \label{fig:confusions}
+\vspace*{-0.4\baselineskip}
+\end{strip}
+
+\subsection*{6.3 Confusion Patterns}
+Most frequent confused languages are:
+\begin{itemize}
+    \item \texttt{konkani$\rightarrow$marathi}
+    \item \texttt{sindhi$\rightarrow$punjabi}
+    \item \texttt{hindi$\rightarrow$urdu}
+\end{itemize}
+
+These confusions occur mainly because the languages share similar linguistic and acoustic characteristics. 
+As shown in Table~\ref{tab:mitigation_confusions}, DANN reduces dominant confusions, but not all.
+
+Pattern-specific interpretation:
+\begin{itemize}
+    \item \texttt{hindi$\rightarrow$urdu}: similar words and pronounciation patterns in conversational speech.
+    \item \texttt{konkani$\rightarrow$marathi}: regional similarity and overlapping speaking styles.
+    \item \texttt{sindhi$\rightarrow$punjabi}: difficult boundary under uneven class difficulty
+    \item $\texttt{odia}\rightarrow\texttt{bengali}$ and $\texttt{santali}\rightarrow\texttt{bengali}$: neighboring-language proximity
+\end{itemize}
+
+The results also show that DANN reduces dominant confusions compared to the untuned mHuBERT model including (\texttt{sindhi$\rightarrow$punjabi}, \texttt{santali$\rightarrow$bengali}, \texttt{odia$\rightarrow$bengali}, \texttt{hindi$\rightarrow$urdu}, \texttt{konkani$\rightarrow$marathi}). 
+Consequently, some alternative confusions increase (for example \texttt{bodo$\rightarrow$manipuri} and \texttt{nepali$\rightarrow$manipuri} when compared with Mitigation 1), indicating that the model still struggles with closely related languages.
+ \FloatBarrier
+
+\subsection*{6.4 Representation Analysis (t-SNE)}
+t-SNE is applied to last-layer validation embeddings.
+To ensure consistent comparison, the analysis setup has fixed (\texttt{max\_samples=2200}, \texttt{perplexity=30},
+\texttt{seed=42}, \texttt{speaker\_top\_k=12})
+For DANN:
+\begin{itemize}
+    \item Silhouette (language): 0.0047
+    \item Silhouette (speaker top-k): -0.0992
+    \item kNN speaker purity@5: 0.3433
+\end{itemize}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_language.png}
+    \hfill
+    \includegraphics[width=0.48\linewidth]{figures/tsne_dann_by_speaker.png}
+    \caption{DANN t-SNE on validation embeddings: by language (left), by speaker (right).}
+    \label{fig:tsne_dann}
+\end{figure}
+
+Interpretation: speaker bias is weakened but not completely removed.
+The negative speaker silhouette indicates reduced speaker clustering,
+while non-zero kNN purity shows that some speaker identity still remains in embedding neighborhoods.
+
+This is also supported by other diagnostics:
+\begin{itemize}
+    \item \texttt{overlap\_speaker\_count=0}, \texttt{warnings=[]} (train and validation speakers are unique)
+    \item unseen-speaker accuracy improves across runs (\texttt{0.4676 $\rightarrow$ 0.5270 $\rightarrow$ 0.5388 $\rightarrow$ 0.5576}, with DANN achieving the best performance.)
+\end{itemize}
+
+So, the improved model is more speaker-robust and language-discriminative than earlier mitigations, but it still encodes some speaker information.
+\FloatBarrier
+
+\section*{7 Conclusion}
+The tuned mHuBERT model provides a strong reference baseline prior to bias mitigation. The results show that mitigation performance depends on the training setup. Mild data augmentation improves the model, while very strong augmentation can reduce performance. The best final model is DANN, which achieves the highest accuracy and improves performance on weaker languages under unseen-speaker validation. The analysis shows that speaker bias is reduced, but some difficult language confusions and speaker-related signals still remain.
+
+\renewcommand{\refname}{Reference}
+\bibliographystyle{acl_natbib}
+\bibliography{custom}
+
+\end{document}

@@ -1,0 +1,15 @@
+{
+  "run_key": "mitigation1",
+  "run_label": "Mitigation 1 (data-centric)",
+  "run_id": "SLID_utter-project-mHuBERT-147_1e-05_20260302_111613",
+  "train_unique_speakers": 110,
+  "validation_unique_speakers": 681,
+  "overlap_speaker_count": 0,
+  "overlap_ratio_validation_speakers": 0.0,
+  "validation_samples_seen_speakers": 0,
+  "validation_samples_unseen_speakers": 3300,
+  "accuracy_seen_speakers": null,
+  "accuracy_unseen_speakers": 0.5387878787878788,
+  "warnings_count": 0,
+  "warnings": ""
+}

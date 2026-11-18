@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import inspect
 import json
+import math
 import os
 import re
 from dataclasses import asdict, dataclass, field
@@ -12,11 +13,16 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from datasets import Audio, load_dataset
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from torch.utils.data import DataLoader
 from transformers import (
     AutoConfig,
     AutoFeatureExtractor,
+    AutoModel,
     AutoModelForAudioClassification,
     Trainer,
     TrainingArguments,
@@ -39,11 +45,12 @@ except ImportError:  # Optional if HF login is not needed.
 # =========================
 @dataclass
 class TrainConfig:
-    model_id: str = "facebook/mms-300m"
+    model_id: str = "utter-project/mHuBERT-147"
     dataset_name: str = "badrex/nnti-dataset-full"
     sample_rate: int = 16000
     max_duration_sec: int = 7
     seed: int = 42
+    max_grad_norm: Optional[float] = None
 
     map_batch_size: int = 32
     per_device_train_batch_size: int = 8
@@ -78,6 +85,12 @@ class TrainConfig:
     save_confusion_matrix_csv: bool = True
     save_confusion_matrix_png: bool = True
     save_per_language_csv: bool = True
+    run_tsne: bool = True
+    tsne_max_samples: int = 2200
+    tsne_batch_size: int = 8
+    tsne_perplexity: float = 30.0
+    tsne_random_state: int = 42
+    tsne_speaker_top_k: int = 12
     run_speaker_diagnostic: bool = True
     speaker_overlap_warn_ratio: float = 0.2
     speaker_seen_gap_warn: float = 0.10
@@ -87,6 +100,12 @@ class TrainConfig:
     attention_dropout: float = 0.1
     activation_dropout: float = 0.1
     feat_proj_dropout: float = 0.1
+
+    enable_dann: bool = True
+    dann_speaker_loss_weight: float = 0.1
+    dann_grl_lambda: float = 1.0
+    dann_use_lambda_schedule: bool = True
+    dann_speaker_head_dropout: float = 0.1
 
     timestamp: str = field(default_factory=lambda: datetime.now().strftime("%Y%m%d_%H%M%S"))
 
@@ -179,7 +198,140 @@ class AudioDataCollator:
         }
         batch = self.feature_extractor.pad(batch, padding=True, return_tensors="pt")
         batch["labels"] = torch.tensor([f["label"] for f in features], dtype=torch.long)
+        if "speaker_labels" in features[0]:
+            batch["speaker_labels"] = torch.tensor(
+                [int(f.get("speaker_labels", -100)) for f in features], dtype=torch.long
+            )
         return batch
+
+
+class GradientReversalFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, lambda_: float) -> torch.Tensor:
+        ctx.lambda_ = float(lambda_)
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output: torch.Tensor):
+        return grad_output.neg() * ctx.lambda_, None
+
+
+def grad_reverse(x: torch.Tensor, lambda_: float) -> torch.Tensor:
+    return GradientReversalFunction.apply(x, lambda_)
+
+
+class DANNForAudioClassification(nn.Module):
+    def __init__(
+        self,
+        *,
+        model_id: str,
+        num_labels: int,
+        num_speakers: int,
+        speaker_head_dropout: float,
+    ) -> None:
+        super().__init__()
+        self.encoder = AutoModel.from_pretrained(model_id)
+        self.language_classifier = nn.LazyLinear(num_labels)
+        self.speaker_classifier = nn.Sequential(
+            nn.Dropout(p=speaker_head_dropout),
+            nn.LazyLinear(num_speakers),
+        )
+
+    def _pool(self, sequence_output: torch.Tensor, attention_mask: Optional[torch.Tensor]) -> torch.Tensor:
+        if sequence_output.ndim != 3:
+            return sequence_output
+        if attention_mask is None:
+            return sequence_output.mean(dim=1)
+        mask = attention_mask.to(sequence_output.device).float()
+        if mask.shape[1] != sequence_output.shape[1]:
+            return sequence_output.mean(dim=1)
+        denom = mask.sum(dim=1, keepdim=True).clamp_min(1.0)
+        masked = sequence_output * mask.unsqueeze(-1)
+        return masked.sum(dim=1) / denom
+
+    def forward(
+        self,
+        input_values: Optional[torch.Tensor] = None,
+        input_features: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        speaker_labels: Optional[torch.Tensor] = None,
+        grl_lambda: float = 1.0,
+        **_: Any,
+    ) -> Dict[str, torch.Tensor]:
+        encoder_inputs: Dict[str, torch.Tensor] = {}
+        if input_values is not None:
+            encoder_inputs["input_values"] = input_values
+        if input_features is not None:
+            encoder_inputs["input_features"] = input_features
+        if attention_mask is not None:
+            encoder_inputs["attention_mask"] = attention_mask
+
+        try:
+            encoder_outputs = self.encoder(**encoder_inputs)
+        except TypeError:
+            encoder_inputs.pop("attention_mask", None)
+            encoder_outputs = self.encoder(**encoder_inputs)
+
+        if hasattr(encoder_outputs, "last_hidden_state") and encoder_outputs.last_hidden_state is not None:
+            sequence_output = encoder_outputs.last_hidden_state
+        else:
+            sequence_output = encoder_outputs[0]
+
+        pooled = self._pool(sequence_output, attention_mask)
+        language_logits = self.language_classifier(pooled)
+        speaker_logits = self.speaker_classifier(grad_reverse(pooled, grl_lambda))
+
+        return {
+            "logits": language_logits,
+            "speaker_logits": speaker_logits,
+        }
+
+
+class DANNTrainer(Trainer):
+    def __init__(
+        self,
+        *args: Any,
+        dann_speaker_loss_weight: float,
+        dann_grl_lambda: float,
+        dann_use_lambda_schedule: bool,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.dann_speaker_loss_weight = float(dann_speaker_loss_weight)
+        self.dann_grl_lambda = float(dann_grl_lambda)
+        self.dann_use_lambda_schedule = bool(dann_use_lambda_schedule)
+
+    def _current_grl_lambda(self) -> float:
+        if not self.dann_use_lambda_schedule:
+            return self.dann_grl_lambda
+        max_steps = max(1, int(getattr(self.state, "max_steps", 0) or 1))
+        progress = float(getattr(self.state, "global_step", 0)) / max_steps
+        schedule = 2.0 / (1.0 + math.exp(-10.0 * progress)) - 1.0
+        return self.dann_grl_lambda * schedule
+
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):  # type: ignore[override]
+        labels = inputs.get("labels")
+        speaker_labels = inputs.get("speaker_labels")
+        outputs = model(**inputs, grl_lambda=self._current_grl_lambda())
+
+        language_logits = outputs["logits"]
+        language_loss = F.cross_entropy(language_logits, labels)
+        total_loss = language_loss
+
+        speaker_loss = None
+        if model.training and speaker_labels is not None:
+            valid = speaker_labels >= 0
+            if torch.any(valid):
+                speaker_logits = outputs["speaker_logits"]
+                speaker_loss = F.cross_entropy(speaker_logits[valid], speaker_labels[valid])
+                total_loss = language_loss + (self.dann_speaker_loss_weight * speaker_loss)
+
+        if return_outputs:
+            outputs["language_loss"] = language_loss.detach()
+            if speaker_loss is not None:
+                outputs["speaker_loss"] = speaker_loss.detach()
+            return total_loss, outputs
+        return total_loss
 
 
 class WaveformAugmenter:
@@ -236,6 +388,7 @@ def make_preprocess_function(
     *,
     feature_extractor,
     str_to_int: Dict[str, int],
+    speaker_to_int: Optional[Dict[str, int]],
     input_features_key: str,
     max_duration_sec: int,
     augmenter: Optional[WaveformAugmenter] = None,
@@ -260,6 +413,8 @@ def make_preprocess_function(
         )
 
         inputs["label"] = [str_to_int[x] for x in examples["language"]]
+        if speaker_to_int is not None:
+            inputs["speaker_labels"] = [speaker_to_int.get(str(s), -100) for s in examples["speaker_id"]]
 
         inputs[input_features_key] = [np.asarray(x, dtype=np.float32) for x in inputs[input_features_key]]
         inputs["length"] = [len(f) for f in inputs[input_features_key]]
@@ -291,6 +446,230 @@ def make_compute_metrics(int_to_str: Dict[int, str]):
         return metrics
 
     return compute_metrics
+
+
+def pool_sequence_representation(
+    last_hidden_state: torch.Tensor,
+    attention_mask: Optional[torch.Tensor],
+) -> torch.Tensor:
+    if last_hidden_state.ndim != 3:
+        return last_hidden_state
+    if attention_mask is None:
+        return last_hidden_state.mean(dim=1)
+
+    mask = attention_mask.to(last_hidden_state.device).float()
+    if mask.shape[1] != last_hidden_state.shape[1]:
+        return last_hidden_state.mean(dim=1)
+
+    denom = mask.sum(dim=1, keepdim=True).clamp_min(1.0)
+    masked = last_hidden_state * mask.unsqueeze(-1)
+    return masked.sum(dim=1) / denom
+
+
+def extract_last_layer_representations(
+    *,
+    model,
+    dataset_encoded,
+    data_collator,
+    batch_size: int,
+) -> np.ndarray:
+    dataloader = DataLoader(
+        dataset_encoded,
+        batch_size=max(1, batch_size),
+        shuffle=False,
+        collate_fn=data_collator,
+    )
+
+    model_was_training = model.training
+    model.eval()
+
+    device = next(model.parameters()).device
+    all_repr: List[np.ndarray] = []
+    is_dann_model = hasattr(model, "encoder") and hasattr(model, "_pool")
+
+    with torch.no_grad():
+        for batch in dataloader:
+            batch.pop("labels", None)
+            batch.pop("speaker_labels", None)
+            batch = {k: v.to(device) for k, v in batch.items()}
+            attention_mask = batch.get("attention_mask")
+
+            if is_dann_model:
+                encoder_inputs: Dict[str, torch.Tensor] = {}
+                if "input_values" in batch:
+                    encoder_inputs["input_values"] = batch["input_values"]
+                if "input_features" in batch:
+                    encoder_inputs["input_features"] = batch["input_features"]
+                if attention_mask is not None:
+                    encoder_inputs["attention_mask"] = attention_mask
+
+                try:
+                    encoder_outputs = model.encoder(**encoder_inputs, output_hidden_states=True)
+                except TypeError:
+                    encoder_outputs = model.encoder(**encoder_inputs)
+
+                hidden_states = getattr(encoder_outputs, "hidden_states", None)
+                if hidden_states is not None and len(hidden_states) > 0:
+                    last_hidden = hidden_states[-1]
+                elif hasattr(encoder_outputs, "last_hidden_state") and encoder_outputs.last_hidden_state is not None:
+                    last_hidden = encoder_outputs.last_hidden_state
+                else:
+                    last_hidden = encoder_outputs[0]
+
+                pooled = model._pool(last_hidden, attention_mask)
+            else:
+                try:
+                    outputs = model(**batch, output_hidden_states=True)
+                except TypeError:
+                    outputs = model(**batch)
+
+                hidden_states = getattr(outputs, "hidden_states", None)
+                if hidden_states is None and isinstance(outputs, tuple) and len(outputs) > 1:
+                    hidden_states = outputs[1]
+                if hidden_states is None:
+                    raise RuntimeError(
+                        "Could not access hidden states for t-SNE. "
+                        "Ensure the model forward supports output_hidden_states."
+                    )
+
+                last_hidden = hidden_states[-1]
+                pooled = pool_sequence_representation(last_hidden, attention_mask)
+
+            all_repr.append(pooled.detach().cpu().numpy())
+
+    if model_was_training:
+        model.train()
+
+    return np.concatenate(all_repr, axis=0) if all_repr else np.empty((0, 0), dtype=np.float32)
+
+
+def sample_indices_for_tsne(
+    *,
+    languages: List[str],
+    max_samples: int,
+    seed: int,
+) -> np.ndarray:
+    n = len(languages)
+    if max_samples <= 0 or n <= max_samples:
+        return np.arange(n, dtype=np.int64)
+
+    rng = np.random.default_rng(seed)
+    labels = np.asarray(languages)
+    unique = sorted(set(languages))
+    selected: List[int] = []
+
+    quota = max(1, max_samples // max(1, len(unique)))
+    for label in unique:
+        label_idx = np.where(labels == label)[0]
+        take = min(len(label_idx), quota)
+        if take > 0:
+            picked = rng.choice(label_idx, size=take, replace=False)
+            selected.extend(picked.tolist())
+
+    if len(selected) < max_samples:
+        remaining = np.setdiff1d(np.arange(n, dtype=np.int64), np.array(selected, dtype=np.int64), assume_unique=False)
+        extra_take = min(len(remaining), max_samples - len(selected))
+        if extra_take > 0:
+            picked_extra = rng.choice(remaining, size=extra_take, replace=False)
+            selected.extend(picked_extra.tolist())
+
+    selected = sorted(set(selected))
+    return np.array(selected[:max_samples], dtype=np.int64)
+
+
+def run_tsne_and_save(
+    *,
+    representations: np.ndarray,
+    languages: List[str],
+    speaker_ids: List[str],
+    output_dir: Path,
+    cfg: TrainConfig,
+) -> None:
+    if representations.size == 0:
+        print("t-SNE skipped: empty representation tensor.")
+        return
+
+    indices = sample_indices_for_tsne(
+        languages=languages,
+        max_samples=cfg.tsne_max_samples,
+        seed=cfg.tsne_random_state,
+    )
+
+    reps = representations[indices]
+    langs = [languages[i] for i in indices]
+    speakers = [str(speaker_ids[i]) for i in indices]
+
+    max_perplexity = max(5.0, float((len(indices) - 1) // 3))
+    perplexity = min(float(cfg.tsne_perplexity), max_perplexity)
+    if perplexity < 5.0:
+        print("t-SNE skipped: not enough samples for stable projection.")
+        return
+
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        init="pca",
+        learning_rate="auto",
+        random_state=cfg.tsne_random_state,
+    )
+    coords = tsne.fit_transform(reps)
+
+    output_csv = output_dir / "tsne_validation_points.csv"
+    rows = []
+    for i, (x, y) in enumerate(coords.tolist()):
+        rows.append(
+            {
+                "x": float(x),
+                "y": float(y),
+                "language": langs[i],
+                "speaker_id": speakers[i],
+            }
+        )
+    write_rows_csv(output_csv, rows, ["x", "y", "language", "speaker_id"])
+    print(f"Saved t-SNE points CSV: {output_csv}")
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    unique_langs = sorted(set(langs))
+    cmap = plt.cm.get_cmap("tab20", max(20, len(unique_langs)))
+    for i, lang in enumerate(unique_langs):
+        mask = np.array([x == lang for x in langs], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=9, alpha=0.75, color=cmap(i), label=lang)
+    ax.set_title("t-SNE (Validation Last-Layer) - Color by Language")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=7, ncol=3, loc="best")
+    fig.tight_layout()
+    lang_png = output_dir / "tsne_validation_by_language.png"
+    fig.savefig(lang_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE language plot: {lang_png}")
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    speaker_counts: Dict[str, int] = {}
+    for s in speakers:
+        speaker_counts[s] = speaker_counts.get(s, 0) + 1
+    top_speakers = [s for s, _ in sorted(speaker_counts.items(), key=lambda x: x[1], reverse=True)[: cfg.tsne_speaker_top_k]]
+
+    other_mask = np.array([s not in top_speakers for s in speakers], dtype=bool)
+    if np.any(other_mask):
+        ax.scatter(coords[other_mask, 0], coords[other_mask, 1], s=8, alpha=0.25, color="lightgray", label="other")
+
+    cmap_spk = plt.cm.get_cmap("tab20", max(20, len(top_speakers)))
+    for i, spk in enumerate(top_speakers):
+        mask = np.array([x == spk for x in speakers], dtype=bool)
+        ax.scatter(coords[mask, 0], coords[mask, 1], s=10, alpha=0.85, color=cmap_spk(i), label=spk)
+
+    ax.set_title(f"t-SNE (Validation Last-Layer) - Color by Speaker (Top {len(top_speakers)})")
+    ax.set_xlabel("t-SNE-1")
+    ax.set_ylabel("t-SNE-2")
+    ax.legend(fontsize=6, ncol=2, loc="best")
+    fig.tight_layout()
+    spk_png = output_dir / "tsne_validation_by_speaker_topk.png"
+    fig.savefig(spk_png, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved t-SNE speaker plot: {spk_png}")
 
 
 def write_confusion_matrix_csv(path: Path, cm: np.ndarray, label_names: List[str]) -> None:
@@ -475,7 +854,7 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         "weight_decay": cfg.weight_decay,
         "warmup_ratio": cfg.warmup_ratio,
         "load_best_model_at_end": True,
-        "metric_for_best_model": "accuracy",
+        "metric_for_best_model": "macro_f1",
         "greater_is_better": True,
         "save_total_limit": cfg.save_total_limit,
         "fp16": bool(cfg.fp16 and torch.cuda.is_available()),
@@ -494,6 +873,16 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+    # Ensure eval/predict metrics are computed against language labels.
+    # DANN still consumes `speaker_labels` inside custom compute_loss.
+    if "label_names" in ta_sig:
+        kwargs["label_names"] = ["labels"]
+
+    if cfg.max_grad_norm is not None:
+        if "max_grad_norm" in ta_sig:
+            kwargs["max_grad_norm"] = cfg.max_grad_norm
+        else:
+            print("Warning: max_grad_norm is not supported in this transformers version. Ignoring it.")
 
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
@@ -505,6 +894,7 @@ def build_training_arguments(cfg: TrainConfig, output_dir: Path, report_to: str)
 
 def build_trainer(
     *,
+    cfg: TrainConfig,
     model,
     training_args,
     train_dataset,
@@ -528,7 +918,55 @@ def build_trainer(
     elif "tokenizer" in trainer_sig:
         kwargs["tokenizer"] = feature_extractor
 
-    return Trainer(**kwargs)
+    trainer_cls = DANNTrainer if cfg.enable_dann else Trainer
+    if cfg.enable_dann:
+        kwargs["dann_speaker_loss_weight"] = cfg.dann_speaker_loss_weight
+        kwargs["dann_grl_lambda"] = cfg.dann_grl_lambda
+        kwargs["dann_use_lambda_schedule"] = cfg.dann_use_lambda_schedule
+
+    return trainer_cls(**kwargs)
+
+
+def initialize_lazy_parameters_with_sample(
+    *,
+    model,
+    dataset_encoded,
+    data_collator,
+) -> None:
+    """
+    Initialize LazyModule parameters (for example, LazyLinear in DANN heads)
+    before Trainer inspects parameter counts.
+    """
+    has_uninitialized = any(
+        isinstance(p, torch.nn.parameter.UninitializedParameter)
+        for p in model.parameters()
+    )
+    if not has_uninitialized:
+        return
+
+    if len(dataset_encoded) == 0:
+        raise ValueError("Cannot initialize lazy parameters: empty encoded dataset.")
+
+    sample = dataset_encoded[0]
+    batch = data_collator([sample])
+    batch.pop("labels", None)
+    batch.pop("speaker_labels", None)
+
+    model_was_training = model.training
+    model.eval()
+    with torch.no_grad():
+        model(**batch)
+    if model_was_training:
+        model.train()
+
+    still_uninitialized = any(
+        isinstance(p, torch.nn.parameter.UninitializedParameter)
+        for p in model.parameters()
+    )
+    if still_uninitialized:
+        raise RuntimeError("Lazy parameters are still uninitialized after warm-up forward.")
+
+    print("Initialized lazy module parameters using one warm-up batch.")
 
 
 def main() -> None:
@@ -568,6 +1006,17 @@ def main() -> None:
     str_to_int = {label: idx for idx, label in enumerate(label_list)}
     int_to_str = {idx: label for label, idx in str_to_int.items()}
     num_labels = len(label_list)
+    speaker_to_int: Optional[Dict[str, int]] = None
+    if cfg.enable_dann:
+        train_speaker_list = sorted(set(map(str, train_ds["speaker_id"])))
+        speaker_to_int = {speaker_id: idx for idx, speaker_id in enumerate(train_speaker_list)}
+        print(f"DANN enabled: adversarial speaker head with {len(train_speaker_list)} train speakers.")
+        print(
+            "DANN params: "
+            f"speaker_loss_weight={cfg.dann_speaker_loss_weight}, "
+            f"grl_lambda={cfg.dann_grl_lambda}, "
+            f"lambda_schedule={cfg.dann_use_lambda_schedule}"
+        )
 
     augmenter: Optional[WaveformAugmenter] = None
     apply_train_aug = False
@@ -589,6 +1038,7 @@ def main() -> None:
     train_preprocess = make_preprocess_function(
         feature_extractor=feature_extractor,
         str_to_int=str_to_int,
+        speaker_to_int=speaker_to_int,
         input_features_key=input_features_key,
         max_duration_sec=cfg.max_duration_sec,
         augmenter=augmenter,
@@ -597,6 +1047,7 @@ def main() -> None:
     valid_preprocess = make_preprocess_function(
         feature_extractor=feature_extractor,
         str_to_int=str_to_int,
+        speaker_to_int=speaker_to_int,
         input_features_key=input_features_key,
         max_duration_sec=cfg.max_duration_sec,
         augmenter=None,
@@ -635,8 +1086,23 @@ def main() -> None:
         if hasattr(model_config, "feat_proj_dropout"):
             model_config.feat_proj_dropout = cfg.feat_proj_dropout
 
-    model = AutoModelForAudioClassification.from_pretrained(cfg.model_id, config=model_config)
+    if cfg.enable_dann:
+        if speaker_to_int is None:
+            raise ValueError("DANN is enabled but speaker mapping is unavailable.")
+        model = DANNForAudioClassification(
+            model_id=cfg.model_id,
+            num_labels=num_labels,
+            num_speakers=len(speaker_to_int),
+            speaker_head_dropout=cfg.dann_speaker_head_dropout,
+        )
+    else:
+        model = AutoModelForAudioClassification.from_pretrained(cfg.model_id, config=model_config)
     data_collator = AudioDataCollator(feature_extractor, input_features_key)
+    initialize_lazy_parameters_with_sample(
+        model=model,
+        dataset_encoded=train_ds_encoded,
+        data_collator=data_collator,
+    )
     compute_metrics = make_compute_metrics(int_to_str)
 
     run_dir = Path(cfg.output_root) / cfg.run_name
@@ -645,6 +1111,7 @@ def main() -> None:
 
     training_args = build_training_arguments(cfg, run_dir, report_to)
     trainer = build_trainer(
+        cfg=cfg,
         model=model,
         training_args=training_args,
         train_dataset=train_ds_encoded,
@@ -653,6 +1120,8 @@ def main() -> None:
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+    # Hard-guard for DANN runs: metrics must use language labels, not speaker_labels.
+    trainer.label_names = ["labels"]
 
     print("Train loop starting...")
     train_result = trainer.train()
@@ -706,6 +1175,25 @@ def main() -> None:
             cfg=cfg,
             output_dir=diagnostics_dir,
         )
+
+    if cfg.run_tsne:
+        try:
+            print("t-SNE export starting (validation last-layer representations)...")
+            representations = extract_last_layer_representations(
+                model=trainer.model,
+                dataset_encoded=valid_ds_encoded,
+                data_collator=data_collator,
+                batch_size=cfg.tsne_batch_size,
+            )
+            run_tsne_and_save(
+                representations=representations,
+                languages=[str(x) for x in valid_ds_encoded["language"]],
+                speaker_ids=[str(x) for x in valid_ds_encoded["speaker_id"]],
+                output_dir=diagnostics_dir,
+                cfg=cfg,
+            )
+        except Exception as exc:
+            print(f"Warning: t-SNE export failed and was skipped: {exc}")
 
     if wandb_enabled and wandb is not None:
         wandb.finish()

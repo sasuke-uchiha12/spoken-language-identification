@@ -1,0 +1,3 @@
+run_key,run_label,run_id,view,n_points,n_labels,intra_mean_distance,inter_centroid_mean_distance,separation_ratio
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,language,2200,22,22.84405549502808,39.14532036281005,1.713588919066051
+improved_dann,Improved (DANN),SLID_utter-project-mHuBERT-147_1e-05_20260305_022125,speaker_topk,60,12,22.511227662079566,26.124820776013724,1.1605240357468953

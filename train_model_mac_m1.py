@@ -45,7 +45,7 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
         "weight_decay": cfg.weight_decay,
         "warmup_ratio": cfg.warmup_ratio,
         "load_best_model_at_end": True,
-        "metric_for_best_model": "accuracy",
+        "metric_for_best_model": "macro_f1",
         "greater_is_better": True,
         "save_total_limit": cfg.save_total_limit,
         "fp16": False,  # fp16 is CUDA-specific for this workflow.
@@ -64,6 +64,8 @@ def build_training_arguments_mps(cfg: base.TrainConfig, output_dir: Path, report
         kwargs["data_seed"] = cfg.seed
     if cfg.group_by_length and "length_column_name" in ta_sig:
         kwargs["length_column_name"] = "length"
+    if "label_names" in ta_sig:
+        kwargs["label_names"] = ["labels"]
 
     if "evaluation_strategy" in ta_sig:
         kwargs["evaluation_strategy"] = "steps"
@@ -95,13 +97,24 @@ def configure_mac_profile() -> None:
     cfg.per_device_train_batch_size = 1
     cfg.per_device_eval_batch_size = 1
     cfg.gradient_accumulation_steps = 4
-    cfg.max_duration_sec = 5
+    cfg.max_duration_sec = 7
+    cfg.max_grad_norm = 1.0
     cfg.group_by_length = True
     cfg.fp16 = False
     cfg.logging_steps = 20
-    cfg.eval_steps = 200
-    cfg.save_steps = 200
+    cfg.eval_steps = 100
+    cfg.save_steps = 100
+
+    # Default best-run profile: keep augmentation OFF and rely on DANN.
     cfg.enable_train_augmentation = False
+
+    # DANN is enabled by default.
+    cfg.enable_dann = True
+    cfg.dann_speaker_loss_weight = 0.1
+    cfg.dann_grl_lambda = 1.0
+    cfg.dann_use_lambda_schedule = True
+    cfg.dann_speaker_head_dropout = 0.1
+    cfg.run_tsne = True
 
     base.print_device_info = print_device_info_mps
     base.build_training_arguments = build_training_arguments_mps

@@ -1,0 +1,3342 @@
+{
+  "best_global_step": 6200,
+  "best_metric": 0.4675757575757576,
+  "best_model_checkpoint": "indic-SLID-mac/SLID_utter-project-mHuBERT-147_1e-05_20260301_094826/checkpoint-6200",
+  "epoch": 3.0,
+  "eval_steps": 200,
+  "global_step": 6519,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "epoch": 0.009207043388191966,
+      "grad_norm": 2.518460988998413,
+      "learning_rate": 2.9141104294478527e-07,
+      "loss": 12.364894104003906,
+      "step": 20
+    },
+    {
+      "epoch": 0.018414086776383932,
+      "grad_norm": 12.894433975219727,
+      "learning_rate": 5.98159509202454e-07,
+      "loss": 12.357246398925781,
+      "step": 40
+    },
+    {
+      "epoch": 0.027621130164575902,
+      "grad_norm": 1.2917287349700928,
+      "learning_rate": 9.049079754601228e-07,
+      "loss": 12.363247680664063,
+      "step": 60
+    },
+    {
+      "epoch": 0.036828173552767865,
+      "grad_norm": 2.053027868270874,
+      "learning_rate": 1.2116564417177914e-06,
+      "loss": 12.365533447265625,
+      "step": 80
+    },
+    {
+      "epoch": 0.046035216940959835,
+      "grad_norm": 1.1916714906692505,
+      "learning_rate": 1.5184049079754604e-06,
+      "loss": 12.362206268310548,
+      "step": 100
+    },
+    {
+      "epoch": 0.055242260329151804,
+      "grad_norm": 1.3192193508148193,
+      "learning_rate": 1.825153374233129e-06,
+      "loss": 12.366378021240234,
+      "step": 120
+    },
+    {
+      "epoch": 0.06444930371734377,
+      "grad_norm": 42.7209358215332,
+      "learning_rate": 2.1319018404907978e-06,
+      "loss": 12.360176086425781,
+      "step": 140
+    },
+    {
+      "epoch": 0.07365634710553573,
+      "grad_norm": 1.0859044790267944,
+      "learning_rate": 2.4386503067484667e-06,
+      "loss": 12.364324188232422,
+      "step": 160
+    },
+    {
+      "epoch": 0.0828633904937277,
+      "grad_norm": 0.7690746188163757,
+      "learning_rate": 2.7453987730061356e-06,
+      "loss": 12.372734832763673,
+      "step": 180
+    },
+    {
+      "epoch": 0.09207043388191967,
+      "grad_norm": 0.8251597285270691,
+      "learning_rate": 3.052147239263804e-06,
+      "loss": 12.348858642578126,
+      "step": 200
+    },
+    {
+      "epoch": 0.09207043388191967,
+      "eval_acc_lang_assamese": 0.0,
+      "eval_acc_lang_bengali": 0.16666666666666666,
+      "eval_acc_lang_bodo": 0.0,
+      "eval_acc_lang_dogri": 0.0,
+      "eval_acc_lang_gujarati": 0.02666666666666667,
+      "eval_acc_lang_hindi": 0.24666666666666667,
+      "eval_acc_lang_kannada": 0.0,
+      "eval_acc_lang_kashmiri": 0.0,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.0,
+      "eval_acc_lang_marathi": 0.0,
+      "eval_acc_lang_nepali": 0.0,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.0,
+      "eval_acc_lang_sanskrit": 0.0,
+      "eval_acc_lang_santali": 0.7533333333333333,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.0,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.0,
+      "eval_accuracy": 0.054242424242424245,
+      "eval_loss": 3.090656280517578,
+      "eval_macro_f1": 0.013545505546781439,
+      "eval_runtime": 325.514,
+      "eval_samples_per_second": 10.138,
+      "eval_steps_per_second": 10.138,
+      "step": 200
+    },
+    {
+      "epoch": 0.10127747727011163,
+      "grad_norm": 1.8966704607009888,
+      "learning_rate": 3.3588957055214726e-06,
+      "loss": 12.349352264404297,
+      "step": 220
+    },
+    {
+      "epoch": 0.11048452065830361,
+      "grad_norm": 0.7350728511810303,
+      "learning_rate": 3.6656441717791415e-06,
+      "loss": 12.356075286865234,
+      "step": 240
+    },
+    {
+      "epoch": 0.11969156404649557,
+      "grad_norm": 1.0894994735717773,
+      "learning_rate": 3.9723926380368096e-06,
+      "loss": 12.365031433105468,
+      "step": 260
+    },
+    {
+      "epoch": 0.12889860743468753,
+      "grad_norm": 0.8056190013885498,
+      "learning_rate": 4.279141104294479e-06,
+      "loss": 12.355448913574218,
+      "step": 280
+    },
+    {
+      "epoch": 0.1381056508228795,
+      "grad_norm": 0.7221129536628723,
+      "learning_rate": 4.585889570552147e-06,
+      "loss": 12.351537322998047,
+      "step": 300
+    },
+    {
+      "epoch": 0.14731269421107146,
+      "grad_norm": 1.1617604494094849,
+      "learning_rate": 4.892638036809817e-06,
+      "loss": 12.340725708007813,
+      "step": 320
+    },
+    {
+      "epoch": 0.15651973759926344,
+      "grad_norm": 1.327215552330017,
+      "learning_rate": 5.199386503067485e-06,
+      "loss": 12.36313705444336,
+      "step": 340
+    },
+    {
+      "epoch": 0.1657267809874554,
+      "grad_norm": 0.9128473401069641,
+      "learning_rate": 5.5061349693251546e-06,
+      "loss": 12.344215393066406,
+      "step": 360
+    },
+    {
+      "epoch": 0.17493382437564736,
+      "grad_norm": 1.234811782836914,
+      "learning_rate": 5.812883435582822e-06,
+      "loss": 12.334620666503906,
+      "step": 380
+    },
+    {
+      "epoch": 0.18414086776383934,
+      "grad_norm": 0.9287206530570984,
+      "learning_rate": 6.1196319018404916e-06,
+      "loss": 12.3477294921875,
+      "step": 400
+    },
+    {
+      "epoch": 0.18414086776383934,
+      "eval_acc_lang_assamese": 0.0,
+      "eval_acc_lang_bengali": 0.02666666666666667,
+      "eval_acc_lang_bodo": 0.0,
+      "eval_acc_lang_dogri": 0.0,
+      "eval_acc_lang_gujarati": 0.1,
+      "eval_acc_lang_hindi": 0.006666666666666667,
+      "eval_acc_lang_kannada": 0.0,
+      "eval_acc_lang_kashmiri": 0.0,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.006666666666666667,
+      "eval_acc_lang_marathi": 0.0,
+      "eval_acc_lang_nepali": 0.0,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.8733333333333333,
+      "eval_acc_lang_sanskrit": 0.0,
+      "eval_acc_lang_santali": 0.5133333333333333,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.0,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.0,
+      "eval_accuracy": 0.0693939393939394,
+      "eval_loss": 3.0884037017822266,
+      "eval_macro_f1": 0.024585386985947314,
+      "eval_runtime": 258.1936,
+      "eval_samples_per_second": 12.781,
+      "eval_steps_per_second": 12.781,
+      "step": 400
+    },
+    {
+      "epoch": 0.19334791115203132,
+      "grad_norm": 0.8232775926589966,
+      "learning_rate": 6.426380368098159e-06,
+      "loss": 12.342977142333984,
+      "step": 420
+    },
+    {
+      "epoch": 0.20255495454022326,
+      "grad_norm": 2.694791555404663,
+      "learning_rate": 6.7331288343558285e-06,
+      "loss": 12.314603424072265,
+      "step": 440
+    },
+    {
+      "epoch": 0.21176199792841524,
+      "grad_norm": 2.81304931640625,
+      "learning_rate": 7.039877300613498e-06,
+      "loss": 12.333157348632813,
+      "step": 460
+    },
+    {
+      "epoch": 0.22096904131660722,
+      "grad_norm": 0.7590494155883789,
+      "learning_rate": 7.346625766871166e-06,
+      "loss": 12.335465240478516,
+      "step": 480
+    },
+    {
+      "epoch": 0.23017608470479917,
+      "grad_norm": 1.151795506477356,
+      "learning_rate": 7.653374233128835e-06,
+      "loss": 12.313491058349609,
+      "step": 500
+    },
+    {
+      "epoch": 0.23938312809299114,
+      "grad_norm": 1.3555514812469482,
+      "learning_rate": 7.960122699386503e-06,
+      "loss": 12.284630584716798,
+      "step": 520
+    },
+    {
+      "epoch": 0.2485901714811831,
+      "grad_norm": 1.2099974155426025,
+      "learning_rate": 8.266871165644172e-06,
+      "loss": 12.293048095703124,
+      "step": 540
+    },
+    {
+      "epoch": 0.25779721486937507,
+      "grad_norm": 1.4667469263076782,
+      "learning_rate": 8.573619631901841e-06,
+      "loss": 12.235112762451172,
+      "step": 560
+    },
+    {
+      "epoch": 0.267004258257567,
+      "grad_norm": 1.1039862632751465,
+      "learning_rate": 8.88036809815951e-06,
+      "loss": 12.221198272705077,
+      "step": 580
+    },
+    {
+      "epoch": 0.276211301645759,
+      "grad_norm": 1.6454819440841675,
+      "learning_rate": 9.187116564417178e-06,
+      "loss": 12.20972137451172,
+      "step": 600
+    },
+    {
+      "epoch": 0.276211301645759,
+      "eval_acc_lang_assamese": 0.2866666666666667,
+      "eval_acc_lang_bengali": 0.04666666666666667,
+      "eval_acc_lang_bodo": 0.04,
+      "eval_acc_lang_dogri": 0.2,
+      "eval_acc_lang_gujarati": 0.05333333333333334,
+      "eval_acc_lang_hindi": 0.02666666666666667,
+      "eval_acc_lang_kannada": 0.12,
+      "eval_acc_lang_kashmiri": 0.17333333333333334,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.02,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.006666666666666667,
+      "eval_acc_lang_marathi": 0.29333333333333333,
+      "eval_acc_lang_nepali": 0.006666666666666667,
+      "eval_acc_lang_odia": 0.16666666666666666,
+      "eval_acc_lang_punjabi": 0.013333333333333334,
+      "eval_acc_lang_sanskrit": 0.0,
+      "eval_acc_lang_santali": 0.5933333333333334,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.8266666666666667,
+      "eval_acc_lang_telugu": 0.006666666666666667,
+      "eval_acc_lang_urdu": 0.52,
+      "eval_accuracy": 0.15454545454545454,
+      "eval_loss": 3.0643045902252197,
+      "eval_macro_f1": 0.10600610850610116,
+      "eval_runtime": 255.3707,
+      "eval_samples_per_second": 12.922,
+      "eval_steps_per_second": 12.922,
+      "step": 600
+    },
+    {
+      "epoch": 0.28541834503395097,
+      "grad_norm": 4.633390426635742,
+      "learning_rate": 9.493865030674848e-06,
+      "loss": 12.169380950927735,
+      "step": 620
+    },
+    {
+      "epoch": 0.2946253884221429,
+      "grad_norm": 3.340163469314575,
+      "learning_rate": 9.800613496932517e-06,
+      "loss": 12.122623443603516,
+      "step": 640
+    },
+    {
+      "epoch": 0.3038324318103349,
+      "grad_norm": 5.3186469078063965,
+      "learning_rate": 9.98806885972388e-06,
+      "loss": 12.092920684814453,
+      "step": 660
+    },
+    {
+      "epoch": 0.3130394751985269,
+      "grad_norm": 1.4720439910888672,
+      "learning_rate": 9.953979887506391e-06,
+      "loss": 11.970589447021485,
+      "step": 680
+    },
+    {
+      "epoch": 0.3222465185867188,
+      "grad_norm": 25.415693283081055,
+      "learning_rate": 9.919890915288904e-06,
+      "loss": 11.908946228027343,
+      "step": 700
+    },
+    {
+      "epoch": 0.3314535619749108,
+      "grad_norm": 6.650914669036865,
+      "learning_rate": 9.885801943071417e-06,
+      "loss": 11.90781478881836,
+      "step": 720
+    },
+    {
+      "epoch": 0.3406606053631028,
+      "grad_norm": 9.430902481079102,
+      "learning_rate": 9.85171297085393e-06,
+      "loss": 11.847376251220703,
+      "step": 740
+    },
+    {
+      "epoch": 0.3498676487512947,
+      "grad_norm": 5.811819553375244,
+      "learning_rate": 9.817623998636443e-06,
+      "loss": 11.925745391845703,
+      "step": 760
+    },
+    {
+      "epoch": 0.35907469213948673,
+      "grad_norm": 22.052061080932617,
+      "learning_rate": 9.783535026418954e-06,
+      "loss": 11.702861785888672,
+      "step": 780
+    },
+    {
+      "epoch": 0.3682817355276787,
+      "grad_norm": 6.436466217041016,
+      "learning_rate": 9.749446054201467e-06,
+      "loss": 11.761234283447266,
+      "step": 800
+    },
+    {
+      "epoch": 0.3682817355276787,
+      "eval_acc_lang_assamese": 0.8933333333333333,
+      "eval_acc_lang_bengali": 0.18666666666666668,
+      "eval_acc_lang_bodo": 0.0,
+      "eval_acc_lang_dogri": 0.04666666666666667,
+      "eval_acc_lang_gujarati": 0.0,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.0,
+      "eval_acc_lang_kashmiri": 0.21333333333333335,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.08666666666666667,
+      "eval_acc_lang_marathi": 0.13333333333333333,
+      "eval_acc_lang_nepali": 0.006666666666666667,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.92,
+      "eval_acc_lang_sanskrit": 0.0,
+      "eval_acc_lang_santali": 0.0,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.96,
+      "eval_acc_lang_telugu": 0.006666666666666667,
+      "eval_acc_lang_urdu": 0.0,
+      "eval_accuracy": 0.15696969696969698,
+      "eval_loss": 2.9831442832946777,
+      "eval_macro_f1": 0.08298007071501493,
+      "eval_runtime": 255.1052,
+      "eval_samples_per_second": 12.936,
+      "eval_steps_per_second": 12.936,
+      "step": 800
+    },
+    {
+      "epoch": 0.3774887789158706,
+      "grad_norm": 8.457590103149414,
+      "learning_rate": 9.71535708198398e-06,
+      "loss": 11.650194549560547,
+      "step": 820
+    },
+    {
+      "epoch": 0.38669582230406263,
+      "grad_norm": 3.2944388389587402,
+      "learning_rate": 9.681268109766492e-06,
+      "loss": 11.62920913696289,
+      "step": 840
+    },
+    {
+      "epoch": 0.3959028656922546,
+      "grad_norm": 13.883689880371094,
+      "learning_rate": 9.647179137549003e-06,
+      "loss": 11.641742706298828,
+      "step": 860
+    },
+    {
+      "epoch": 0.40510990908044653,
+      "grad_norm": 3.9612245559692383,
+      "learning_rate": 9.613090165331516e-06,
+      "loss": 11.611971282958985,
+      "step": 880
+    },
+    {
+      "epoch": 0.41431695246863853,
+      "grad_norm": 3.394735336303711,
+      "learning_rate": 9.579001193114029e-06,
+      "loss": 11.621414184570312,
+      "step": 900
+    },
+    {
+      "epoch": 0.4235239958568305,
+      "grad_norm": 11.64816665649414,
+      "learning_rate": 9.54491222089654e-06,
+      "loss": 11.385813903808593,
+      "step": 920
+    },
+    {
+      "epoch": 0.43273103924502243,
+      "grad_norm": 6.335474967956543,
+      "learning_rate": 9.510823248679053e-06,
+      "loss": 11.360504913330079,
+      "step": 940
+    },
+    {
+      "epoch": 0.44193808263321444,
+      "grad_norm": 21.260234832763672,
+      "learning_rate": 9.476734276461566e-06,
+      "loss": 11.502020263671875,
+      "step": 960
+    },
+    {
+      "epoch": 0.4511451260214064,
+      "grad_norm": 7.225673675537109,
+      "learning_rate": 9.442645304244079e-06,
+      "loss": 11.434107208251953,
+      "step": 980
+    },
+    {
+      "epoch": 0.46035216940959833,
+      "grad_norm": 15.09223747253418,
+      "learning_rate": 9.40855633202659e-06,
+      "loss": 11.439072418212891,
+      "step": 1000
+    },
+    {
+      "epoch": 0.46035216940959833,
+      "eval_acc_lang_assamese": 0.9133333333333333,
+      "eval_acc_lang_bengali": 0.47333333333333333,
+      "eval_acc_lang_bodo": 0.05333333333333334,
+      "eval_acc_lang_dogri": 0.03333333333333333,
+      "eval_acc_lang_gujarati": 0.006666666666666667,
+      "eval_acc_lang_hindi": 0.006666666666666667,
+      "eval_acc_lang_kannada": 0.02,
+      "eval_acc_lang_kashmiri": 0.0,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.006666666666666667,
+      "eval_acc_lang_manipuri": 0.17333333333333334,
+      "eval_acc_lang_marathi": 0.06666666666666667,
+      "eval_acc_lang_nepali": 0.20666666666666667,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.9266666666666666,
+      "eval_acc_lang_sanskrit": 0.013333333333333334,
+      "eval_acc_lang_santali": 0.006666666666666667,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.9266666666666666,
+      "eval_acc_lang_telugu": 0.25333333333333335,
+      "eval_acc_lang_urdu": 0.0,
+      "eval_accuracy": 0.18575757575757576,
+      "eval_loss": 2.893648386001587,
+      "eval_macro_f1": 0.1109055757294888,
+      "eval_runtime": 249.2608,
+      "eval_samples_per_second": 13.239,
+      "eval_steps_per_second": 13.239,
+      "step": 1000
+    },
+    {
+      "epoch": 0.4695592127977903,
+      "grad_norm": 2.7918684482574463,
+      "learning_rate": 9.374467359809102e-06,
+      "loss": 11.308018493652344,
+      "step": 1020
+    },
+    {
+      "epoch": 0.4787662561859823,
+      "grad_norm": 4.7887349128723145,
+      "learning_rate": 9.340378387591615e-06,
+      "loss": 11.571070098876953,
+      "step": 1040
+    },
+    {
+      "epoch": 0.48797329957417424,
+      "grad_norm": 10.905369758605957,
+      "learning_rate": 9.306289415374126e-06,
+      "loss": 11.2158447265625,
+      "step": 1060
+    },
+    {
+      "epoch": 0.4971803429623662,
+      "grad_norm": 36.68940734863281,
+      "learning_rate": 9.27220044315664e-06,
+      "loss": 11.36188201904297,
+      "step": 1080
+    },
+    {
+      "epoch": 0.5063873863505581,
+      "grad_norm": 15.729939460754395,
+      "learning_rate": 9.238111470939152e-06,
+      "loss": 11.326308441162109,
+      "step": 1100
+    },
+    {
+      "epoch": 0.5155944297387501,
+      "grad_norm": 38.205810546875,
+      "learning_rate": 9.204022498721665e-06,
+      "loss": 11.299049377441406,
+      "step": 1120
+    },
+    {
+      "epoch": 0.5248014731269421,
+      "grad_norm": 2.3918392658233643,
+      "learning_rate": 9.169933526504176e-06,
+      "loss": 11.185318756103516,
+      "step": 1140
+    },
+    {
+      "epoch": 0.534008516515134,
+      "grad_norm": 2.960059404373169,
+      "learning_rate": 9.135844554286689e-06,
+      "loss": 11.144493865966798,
+      "step": 1160
+    },
+    {
+      "epoch": 0.543215559903326,
+      "grad_norm": 3.1300227642059326,
+      "learning_rate": 9.101755582069202e-06,
+      "loss": 11.165519714355469,
+      "step": 1180
+    },
+    {
+      "epoch": 0.552422603291518,
+      "grad_norm": 2.3816802501678467,
+      "learning_rate": 9.067666609851714e-06,
+      "loss": 11.148690795898437,
+      "step": 1200
+    },
+    {
+      "epoch": 0.552422603291518,
+      "eval_acc_lang_assamese": 0.82,
+      "eval_acc_lang_bengali": 0.20666666666666667,
+      "eval_acc_lang_bodo": 0.06,
+      "eval_acc_lang_dogri": 0.04666666666666667,
+      "eval_acc_lang_gujarati": 0.02,
+      "eval_acc_lang_hindi": 0.013333333333333334,
+      "eval_acc_lang_kannada": 0.0,
+      "eval_acc_lang_kashmiri": 0.013333333333333334,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.006666666666666667,
+      "eval_acc_lang_manipuri": 0.24666666666666667,
+      "eval_acc_lang_marathi": 0.06666666666666667,
+      "eval_acc_lang_nepali": 0.29333333333333333,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.9,
+      "eval_acc_lang_sanskrit": 0.0,
+      "eval_acc_lang_santali": 0.0,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.9733333333333334,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.013333333333333334,
+      "eval_accuracy": 0.16727272727272727,
+      "eval_loss": 2.876796245574951,
+      "eval_macro_f1": 0.101891247521662,
+      "eval_runtime": 252.4302,
+      "eval_samples_per_second": 13.073,
+      "eval_steps_per_second": 13.073,
+      "step": 1200
+    },
+    {
+      "epoch": 0.5616296466797099,
+      "grad_norm": 30.712688446044922,
+      "learning_rate": 9.033577637634227e-06,
+      "loss": 10.911758422851562,
+      "step": 1220
+    },
+    {
+      "epoch": 0.5708366900679019,
+      "grad_norm": 6.571797847747803,
+      "learning_rate": 8.999488665416738e-06,
+      "loss": 11.24692153930664,
+      "step": 1240
+    },
+    {
+      "epoch": 0.580043733456094,
+      "grad_norm": 8.78201961517334,
+      "learning_rate": 8.965399693199251e-06,
+      "loss": 10.990028381347656,
+      "step": 1260
+    },
+    {
+      "epoch": 0.5892507768442858,
+      "grad_norm": 9.775447845458984,
+      "learning_rate": 8.931310720981762e-06,
+      "loss": 11.141921997070312,
+      "step": 1280
+    },
+    {
+      "epoch": 0.5984578202324778,
+      "grad_norm": 27.66716957092285,
+      "learning_rate": 8.897221748764275e-06,
+      "loss": 11.071842193603516,
+      "step": 1300
+    },
+    {
+      "epoch": 0.6076648636206698,
+      "grad_norm": 10.2801513671875,
+      "learning_rate": 8.863132776546788e-06,
+      "loss": 10.930937194824219,
+      "step": 1320
+    },
+    {
+      "epoch": 0.6168719070088617,
+      "grad_norm": 23.809951782226562,
+      "learning_rate": 8.8290438043293e-06,
+      "loss": 10.845431518554687,
+      "step": 1340
+    },
+    {
+      "epoch": 0.6260789503970537,
+      "grad_norm": 7.295934677124023,
+      "learning_rate": 8.794954832111814e-06,
+      "loss": 11.034284973144532,
+      "step": 1360
+    },
+    {
+      "epoch": 0.6352859937852458,
+      "grad_norm": 6.812553882598877,
+      "learning_rate": 8.760865859894325e-06,
+      "loss": 10.855164337158204,
+      "step": 1380
+    },
+    {
+      "epoch": 0.6444930371734376,
+      "grad_norm": 5.674227237701416,
+      "learning_rate": 8.726776887676837e-06,
+      "loss": 10.872696685791016,
+      "step": 1400
+    },
+    {
+      "epoch": 0.6444930371734376,
+      "eval_acc_lang_assamese": 0.9066666666666666,
+      "eval_acc_lang_bengali": 0.30666666666666664,
+      "eval_acc_lang_bodo": 0.04666666666666667,
+      "eval_acc_lang_dogri": 0.04,
+      "eval_acc_lang_gujarati": 0.10666666666666667,
+      "eval_acc_lang_hindi": 0.013333333333333334,
+      "eval_acc_lang_kannada": 0.0,
+      "eval_acc_lang_kashmiri": 0.02666666666666667,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.006666666666666667,
+      "eval_acc_lang_malayalam": 0.08,
+      "eval_acc_lang_manipuri": 0.18,
+      "eval_acc_lang_marathi": 0.4866666666666667,
+      "eval_acc_lang_nepali": 0.18,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.8933333333333333,
+      "eval_acc_lang_sanskrit": 0.05333333333333334,
+      "eval_acc_lang_santali": 0.0,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.98,
+      "eval_acc_lang_telugu": 0.006666666666666667,
+      "eval_acc_lang_urdu": 0.04,
+      "eval_accuracy": 0.19787878787878788,
+      "eval_loss": 2.8169448375701904,
+      "eval_macro_f1": 0.12206674073997024,
+      "eval_runtime": 267.1107,
+      "eval_samples_per_second": 12.354,
+      "eval_steps_per_second": 12.354,
+      "step": 1400
+    },
+    {
+      "epoch": 0.6537000805616296,
+      "grad_norm": 3.5282552242279053,
+      "learning_rate": 8.692687915459349e-06,
+      "loss": 10.759765625,
+      "step": 1420
+    },
+    {
+      "epoch": 0.6629071239498217,
+      "grad_norm": 8.95359992980957,
+      "learning_rate": 8.658598943241861e-06,
+      "loss": 10.880109405517578,
+      "step": 1440
+    },
+    {
+      "epoch": 0.6721141673380135,
+      "grad_norm": 17.879854202270508,
+      "learning_rate": 8.624509971024374e-06,
+      "loss": 10.51828842163086,
+      "step": 1460
+    },
+    {
+      "epoch": 0.6813212107262056,
+      "grad_norm": 7.560054302215576,
+      "learning_rate": 8.590420998806887e-06,
+      "loss": 10.670890045166015,
+      "step": 1480
+    },
+    {
+      "epoch": 0.6905282541143976,
+      "grad_norm": 3.561124324798584,
+      "learning_rate": 8.556332026589398e-06,
+      "loss": 10.621339416503906,
+      "step": 1500
+    },
+    {
+      "epoch": 0.6997352975025894,
+      "grad_norm": 10.307291030883789,
+      "learning_rate": 8.522243054371911e-06,
+      "loss": 10.803235626220703,
+      "step": 1520
+    },
+    {
+      "epoch": 0.7089423408907815,
+      "grad_norm": 9.194097518920898,
+      "learning_rate": 8.488154082154424e-06,
+      "loss": 10.852491760253907,
+      "step": 1540
+    },
+    {
+      "epoch": 0.7181493842789735,
+      "grad_norm": 15.183375358581543,
+      "learning_rate": 8.454065109936937e-06,
+      "loss": 10.746537780761718,
+      "step": 1560
+    },
+    {
+      "epoch": 0.7273564276671654,
+      "grad_norm": 7.245273590087891,
+      "learning_rate": 8.41997613771945e-06,
+      "loss": 10.532752990722656,
+      "step": 1580
+    },
+    {
+      "epoch": 0.7365634710553574,
+      "grad_norm": 17.47553825378418,
+      "learning_rate": 8.38588716550196e-06,
+      "loss": 10.697604370117187,
+      "step": 1600
+    },
+    {
+      "epoch": 0.7365634710553574,
+      "eval_acc_lang_assamese": 0.88,
+      "eval_acc_lang_bengali": 0.2733333333333333,
+      "eval_acc_lang_bodo": 0.09333333333333334,
+      "eval_acc_lang_dogri": 0.08,
+      "eval_acc_lang_gujarati": 0.03333333333333333,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.11333333333333333,
+      "eval_acc_lang_kashmiri": 0.0,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.12,
+      "eval_acc_lang_marathi": 0.49333333333333335,
+      "eval_acc_lang_nepali": 0.3333333333333333,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.9533333333333334,
+      "eval_acc_lang_sanskrit": 0.04,
+      "eval_acc_lang_santali": 0.006666666666666667,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.9666666666666667,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.3333333333333333,
+      "eval_accuracy": 0.21454545454545454,
+      "eval_loss": 2.7856621742248535,
+      "eval_macro_f1": 0.14235185791085228,
+      "eval_runtime": 261.3508,
+      "eval_samples_per_second": 12.627,
+      "eval_steps_per_second": 12.627,
+      "step": 1600
+    },
+    {
+      "epoch": 0.7457705144435494,
+      "grad_norm": 56.24163055419922,
+      "learning_rate": 8.351798193284473e-06,
+      "loss": 10.648848724365234,
+      "step": 1620
+    },
+    {
+      "epoch": 0.7549775578317413,
+      "grad_norm": 11.763334274291992,
+      "learning_rate": 8.317709221066985e-06,
+      "loss": 10.176592254638672,
+      "step": 1640
+    },
+    {
+      "epoch": 0.7641846012199333,
+      "grad_norm": 6.842456340789795,
+      "learning_rate": 8.283620248849497e-06,
+      "loss": 10.092140197753906,
+      "step": 1660
+    },
+    {
+      "epoch": 0.7733916446081253,
+      "grad_norm": 6.245882034301758,
+      "learning_rate": 8.24953127663201e-06,
+      "loss": 10.543894958496093,
+      "step": 1680
+    },
+    {
+      "epoch": 0.7825986879963172,
+      "grad_norm": 17.474119186401367,
+      "learning_rate": 8.215442304414523e-06,
+      "loss": 10.442041778564453,
+      "step": 1700
+    },
+    {
+      "epoch": 0.7918057313845092,
+      "grad_norm": 3.723914384841919,
+      "learning_rate": 8.181353332197036e-06,
+      "loss": 10.657750701904297,
+      "step": 1720
+    },
+    {
+      "epoch": 0.8010127747727012,
+      "grad_norm": 3.4073283672332764,
+      "learning_rate": 8.147264359979547e-06,
+      "loss": 10.398580932617188,
+      "step": 1740
+    },
+    {
+      "epoch": 0.8102198181608931,
+      "grad_norm": 23.46457862854004,
+      "learning_rate": 8.11317538776206e-06,
+      "loss": 10.596354675292968,
+      "step": 1760
+    },
+    {
+      "epoch": 0.8194268615490851,
+      "grad_norm": 122.33979797363281,
+      "learning_rate": 8.079086415544573e-06,
+      "loss": 10.754004669189452,
+      "step": 1780
+    },
+    {
+      "epoch": 0.8286339049372771,
+      "grad_norm": 74.74736785888672,
+      "learning_rate": 8.044997443327084e-06,
+      "loss": 10.367855834960938,
+      "step": 1800
+    },
+    {
+      "epoch": 0.8286339049372771,
+      "eval_acc_lang_assamese": 0.9,
+      "eval_acc_lang_bengali": 0.24666666666666667,
+      "eval_acc_lang_bodo": 0.10666666666666667,
+      "eval_acc_lang_dogri": 0.06666666666666667,
+      "eval_acc_lang_gujarati": 0.4533333333333333,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.10666666666666667,
+      "eval_acc_lang_kashmiri": 0.04,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.0,
+      "eval_acc_lang_manipuri": 0.16,
+      "eval_acc_lang_marathi": 0.4533333333333333,
+      "eval_acc_lang_nepali": 0.4866666666666667,
+      "eval_acc_lang_odia": 0.006666666666666667,
+      "eval_acc_lang_punjabi": 0.9066666666666666,
+      "eval_acc_lang_sanskrit": 0.013333333333333334,
+      "eval_acc_lang_santali": 0.0,
+      "eval_acc_lang_sindhi": 0.006666666666666667,
+      "eval_acc_lang_tamil": 0.8866666666666667,
+      "eval_acc_lang_telugu": 0.006666666666666667,
+      "eval_acc_lang_urdu": 0.19333333333333333,
+      "eval_accuracy": 0.2290909090909091,
+      "eval_loss": 2.7379651069641113,
+      "eval_macro_f1": 0.15641633540280567,
+      "eval_runtime": 254.0163,
+      "eval_samples_per_second": 12.991,
+      "eval_steps_per_second": 12.991,
+      "step": 1800
+    },
+    {
+      "epoch": 0.837840948325469,
+      "grad_norm": 10.984456062316895,
+      "learning_rate": 8.010908471109596e-06,
+      "loss": 10.232877349853515,
+      "step": 1820
+    },
+    {
+      "epoch": 0.847047991713661,
+      "grad_norm": 53.412330627441406,
+      "learning_rate": 7.97681949889211e-06,
+      "loss": 10.379396057128906,
+      "step": 1840
+    },
+    {
+      "epoch": 0.856255035101853,
+      "grad_norm": 8.259819984436035,
+      "learning_rate": 7.942730526674622e-06,
+      "loss": 10.335575103759766,
+      "step": 1860
+    },
+    {
+      "epoch": 0.8654620784900449,
+      "grad_norm": 48.134010314941406,
+      "learning_rate": 7.908641554457133e-06,
+      "loss": 10.11480255126953,
+      "step": 1880
+    },
+    {
+      "epoch": 0.8746691218782369,
+      "grad_norm": 7.108154773712158,
+      "learning_rate": 7.874552582239646e-06,
+      "loss": 10.070909118652343,
+      "step": 1900
+    },
+    {
+      "epoch": 0.8838761652664289,
+      "grad_norm": 24.39665985107422,
+      "learning_rate": 7.840463610022159e-06,
+      "loss": 10.432527923583985,
+      "step": 1920
+    },
+    {
+      "epoch": 0.8930832086546208,
+      "grad_norm": 7.2864789962768555,
+      "learning_rate": 7.806374637804672e-06,
+      "loss": 10.161568450927735,
+      "step": 1940
+    },
+    {
+      "epoch": 0.9022902520428128,
+      "grad_norm": 42.357872009277344,
+      "learning_rate": 7.772285665587185e-06,
+      "loss": 10.153675079345703,
+      "step": 1960
+    },
+    {
+      "epoch": 0.9114972954310048,
+      "grad_norm": 5.565766334533691,
+      "learning_rate": 7.738196693369696e-06,
+      "loss": 10.27722396850586,
+      "step": 1980
+    },
+    {
+      "epoch": 0.9207043388191967,
+      "grad_norm": 4.284549713134766,
+      "learning_rate": 7.704107721152207e-06,
+      "loss": 10.167351531982423,
+      "step": 2000
+    },
+    {
+      "epoch": 0.9207043388191967,
+      "eval_acc_lang_assamese": 0.9,
+      "eval_acc_lang_bengali": 0.20666666666666667,
+      "eval_acc_lang_bodo": 0.19333333333333333,
+      "eval_acc_lang_dogri": 0.05333333333333334,
+      "eval_acc_lang_gujarati": 0.42,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.66,
+      "eval_acc_lang_kashmiri": 0.37333333333333335,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.4,
+      "eval_acc_lang_manipuri": 0.2,
+      "eval_acc_lang_marathi": 0.8,
+      "eval_acc_lang_nepali": 0.3466666666666667,
+      "eval_acc_lang_odia": 0.0,
+      "eval_acc_lang_punjabi": 0.9066666666666666,
+      "eval_acc_lang_sanskrit": 0.23333333333333334,
+      "eval_acc_lang_santali": 0.006666666666666667,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.7933333333333333,
+      "eval_acc_lang_telugu": 0.03333333333333333,
+      "eval_acc_lang_urdu": 0.26666666666666666,
+      "eval_accuracy": 0.3087878787878788,
+      "eval_loss": 2.706681728363037,
+      "eval_macro_f1": 0.2487593931089527,
+      "eval_runtime": 262.2874,
+      "eval_samples_per_second": 12.582,
+      "eval_steps_per_second": 12.582,
+      "step": 2000
+    },
+    {
+      "epoch": 0.9299113822073887,
+      "grad_norm": 7.01936674118042,
+      "learning_rate": 7.67001874893472e-06,
+      "loss": 10.139007568359375,
+      "step": 2020
+    },
+    {
+      "epoch": 0.9391184255955806,
+      "grad_norm": 7.449849605560303,
+      "learning_rate": 7.635929776717232e-06,
+      "loss": 10.201582336425782,
+      "step": 2040
+    },
+    {
+      "epoch": 0.9483254689837726,
+      "grad_norm": 55.050132751464844,
+      "learning_rate": 7.601840804499745e-06,
+      "loss": 9.766053009033204,
+      "step": 2060
+    },
+    {
+      "epoch": 0.9575325123719646,
+      "grad_norm": 47.25360870361328,
+      "learning_rate": 7.567751832282257e-06,
+      "loss": 10.338858032226563,
+      "step": 2080
+    },
+    {
+      "epoch": 0.9667395557601565,
+      "grad_norm": 49.37337875366211,
+      "learning_rate": 7.53366286006477e-06,
+      "loss": 9.870155334472656,
+      "step": 2100
+    },
+    {
+      "epoch": 0.9759465991483485,
+      "grad_norm": 7.820340156555176,
+      "learning_rate": 7.499573887847282e-06,
+      "loss": 9.981624603271484,
+      "step": 2120
+    },
+    {
+      "epoch": 0.9851536425365405,
+      "grad_norm": 5.072826862335205,
+      "learning_rate": 7.465484915629795e-06,
+      "loss": 10.10396499633789,
+      "step": 2140
+    },
+    {
+      "epoch": 0.9943606859247324,
+      "grad_norm": 3.1038265228271484,
+      "learning_rate": 7.431395943412306e-06,
+      "loss": 9.812091064453124,
+      "step": 2160
+    },
+    {
+      "epoch": 1.0032224651858672,
+      "grad_norm": 5.354745864868164,
+      "learning_rate": 7.397306971194819e-06,
+      "loss": 9.659860229492187,
+      "step": 2180
+    },
+    {
+      "epoch": 1.0124295085740591,
+      "grad_norm": 6.4380011558532715,
+      "learning_rate": 7.3632179989773315e-06,
+      "loss": 10.194847869873048,
+      "step": 2200
+    },
+    {
+      "epoch": 1.0124295085740591,
+      "eval_acc_lang_assamese": 0.9133333333333333,
+      "eval_acc_lang_bengali": 0.52,
+      "eval_acc_lang_bodo": 0.16666666666666666,
+      "eval_acc_lang_dogri": 0.02666666666666667,
+      "eval_acc_lang_gujarati": 0.5333333333333333,
+      "eval_acc_lang_hindi": 0.02,
+      "eval_acc_lang_kannada": 0.37333333333333335,
+      "eval_acc_lang_kashmiri": 0.6133333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.4,
+      "eval_acc_lang_manipuri": 0.14666666666666667,
+      "eval_acc_lang_marathi": 0.7666666666666667,
+      "eval_acc_lang_nepali": 0.14,
+      "eval_acc_lang_odia": 0.05333333333333334,
+      "eval_acc_lang_punjabi": 0.8266666666666667,
+      "eval_acc_lang_sanskrit": 0.18,
+      "eval_acc_lang_santali": 0.013333333333333334,
+      "eval_acc_lang_sindhi": 0.013333333333333334,
+      "eval_acc_lang_tamil": 0.8333333333333334,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.7066666666666667,
+      "eval_accuracy": 0.3293939393939394,
+      "eval_loss": 2.636810302734375,
+      "eval_macro_f1": 0.26164961122383623,
+      "eval_runtime": 256.1615,
+      "eval_samples_per_second": 12.882,
+      "eval_steps_per_second": 12.882,
+      "step": 2200
+    },
+    {
+      "epoch": 1.0216365519622512,
+      "grad_norm": 13.267114639282227,
+      "learning_rate": 7.3291290267598435e-06,
+      "loss": 9.632037353515624,
+      "step": 2220
+    },
+    {
+      "epoch": 1.0308435953504431,
+      "grad_norm": 6.204841613769531,
+      "learning_rate": 7.295040054542356e-06,
+      "loss": 9.616342926025391,
+      "step": 2240
+    },
+    {
+      "epoch": 1.040050638738635,
+      "grad_norm": 14.816378593444824,
+      "learning_rate": 7.260951082324868e-06,
+      "loss": 10.178847503662109,
+      "step": 2260
+    },
+    {
+      "epoch": 1.0492576821268271,
+      "grad_norm": 2.9261319637298584,
+      "learning_rate": 7.226862110107381e-06,
+      "loss": 9.939482879638671,
+      "step": 2280
+    },
+    {
+      "epoch": 1.058464725515019,
+      "grad_norm": 5.561181545257568,
+      "learning_rate": 7.192773137889894e-06,
+      "loss": 10.106243896484376,
+      "step": 2300
+    },
+    {
+      "epoch": 1.067671768903211,
+      "grad_norm": 5.996069431304932,
+      "learning_rate": 7.158684165672406e-06,
+      "loss": 9.674633026123047,
+      "step": 2320
+    },
+    {
+      "epoch": 1.0768788122914028,
+      "grad_norm": 4.08399772644043,
+      "learning_rate": 7.124595193454919e-06,
+      "loss": 9.631460571289063,
+      "step": 2340
+    },
+    {
+      "epoch": 1.086085855679595,
+      "grad_norm": 2.935713291168213,
+      "learning_rate": 7.09050622123743e-06,
+      "loss": 9.286335754394532,
+      "step": 2360
+    },
+    {
+      "epoch": 1.0952928990677868,
+      "grad_norm": 8.152849197387695,
+      "learning_rate": 7.056417249019943e-06,
+      "loss": 9.53991470336914,
+      "step": 2380
+    },
+    {
+      "epoch": 1.1044999424559787,
+      "grad_norm": 13.821900367736816,
+      "learning_rate": 7.022328276802455e-06,
+      "loss": 10.140557098388673,
+      "step": 2400
+    },
+    {
+      "epoch": 1.1044999424559787,
+      "eval_acc_lang_assamese": 0.7933333333333333,
+      "eval_acc_lang_bengali": 0.2,
+      "eval_acc_lang_bodo": 0.22,
+      "eval_acc_lang_dogri": 0.06,
+      "eval_acc_lang_gujarati": 0.48,
+      "eval_acc_lang_hindi": 0.006666666666666667,
+      "eval_acc_lang_kannada": 0.74,
+      "eval_acc_lang_kashmiri": 0.36666666666666664,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.31333333333333335,
+      "eval_acc_lang_manipuri": 0.44,
+      "eval_acc_lang_marathi": 0.8066666666666666,
+      "eval_acc_lang_nepali": 0.2,
+      "eval_acc_lang_odia": 0.17333333333333334,
+      "eval_acc_lang_punjabi": 0.9133333333333333,
+      "eval_acc_lang_sanskrit": 0.4,
+      "eval_acc_lang_santali": 0.04666666666666667,
+      "eval_acc_lang_sindhi": 0.006666666666666667,
+      "eval_acc_lang_tamil": 0.8533333333333334,
+      "eval_acc_lang_telugu": 0.0,
+      "eval_acc_lang_urdu": 0.6533333333333333,
+      "eval_accuracy": 0.3487878787878788,
+      "eval_loss": 2.6166770458221436,
+      "eval_macro_f1": 0.2927260619589744,
+      "eval_runtime": 259.972,
+      "eval_samples_per_second": 12.694,
+      "eval_steps_per_second": 12.694,
+      "step": 2400
+    },
+    {
+      "epoch": 1.1137069858441708,
+      "grad_norm": 7.493561744689941,
+      "learning_rate": 6.9882393045849674e-06,
+      "loss": 9.782523345947265,
+      "step": 2420
+    },
+    {
+      "epoch": 1.1229140292323627,
+      "grad_norm": 28.406951904296875,
+      "learning_rate": 6.954150332367479e-06,
+      "loss": 9.778662872314452,
+      "step": 2440
+    },
+    {
+      "epoch": 1.1321210726205546,
+      "grad_norm": 6.253516674041748,
+      "learning_rate": 6.920061360149992e-06,
+      "loss": 9.632318115234375,
+      "step": 2460
+    },
+    {
+      "epoch": 1.1413281160087467,
+      "grad_norm": 8.565397262573242,
+      "learning_rate": 6.885972387932505e-06,
+      "loss": 9.548165130615235,
+      "step": 2480
+    },
+    {
+      "epoch": 1.1505351593969386,
+      "grad_norm": 55.239994049072266,
+      "learning_rate": 6.851883415715017e-06,
+      "loss": 9.624407196044922,
+      "step": 2500
+    },
+    {
+      "epoch": 1.1597422027851305,
+      "grad_norm": 31.758792877197266,
+      "learning_rate": 6.81779444349753e-06,
+      "loss": 9.808666229248047,
+      "step": 2520
+    },
+    {
+      "epoch": 1.1689492461733226,
+      "grad_norm": 11.444453239440918,
+      "learning_rate": 6.783705471280041e-06,
+      "loss": 9.657947540283203,
+      "step": 2540
+    },
+    {
+      "epoch": 1.1781562895615145,
+      "grad_norm": 4.981764316558838,
+      "learning_rate": 6.749616499062554e-06,
+      "loss": 9.706756591796875,
+      "step": 2560
+    },
+    {
+      "epoch": 1.1873633329497064,
+      "grad_norm": 7.3463873863220215,
+      "learning_rate": 6.715527526845066e-06,
+      "loss": 9.41875,
+      "step": 2580
+    },
+    {
+      "epoch": 1.1965703763378985,
+      "grad_norm": 4.125147342681885,
+      "learning_rate": 6.6814385546275786e-06,
+      "loss": 9.24263916015625,
+      "step": 2600
+    },
+    {
+      "epoch": 1.1965703763378985,
+      "eval_acc_lang_assamese": 0.84,
+      "eval_acc_lang_bengali": 0.2,
+      "eval_acc_lang_bodo": 0.24666666666666667,
+      "eval_acc_lang_dogri": 0.06666666666666667,
+      "eval_acc_lang_gujarati": 0.5933333333333334,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.54,
+      "eval_acc_lang_kashmiri": 0.30666666666666664,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.24666666666666667,
+      "eval_acc_lang_manipuri": 0.58,
+      "eval_acc_lang_marathi": 0.7333333333333333,
+      "eval_acc_lang_nepali": 0.08666666666666667,
+      "eval_acc_lang_odia": 0.2866666666666667,
+      "eval_acc_lang_punjabi": 0.9,
+      "eval_acc_lang_sanskrit": 0.54,
+      "eval_acc_lang_santali": 0.013333333333333334,
+      "eval_acc_lang_sindhi": 0.006666666666666667,
+      "eval_acc_lang_tamil": 0.9266666666666666,
+      "eval_acc_lang_telugu": 0.006666666666666667,
+      "eval_acc_lang_urdu": 0.6066666666666667,
+      "eval_accuracy": 0.3512121212121212,
+      "eval_loss": 2.604659080505371,
+      "eval_macro_f1": 0.28996050805069234,
+      "eval_runtime": 256.3344,
+      "eval_samples_per_second": 12.874,
+      "eval_steps_per_second": 12.874,
+      "step": 2600
+    },
+    {
+      "epoch": 1.2057774197260904,
+      "grad_norm": 7.06054162979126,
+      "learning_rate": 6.6473495824100905e-06,
+      "loss": 9.439132690429688,
+      "step": 2620
+    },
+    {
+      "epoch": 1.2149844631142823,
+      "grad_norm": 77.00664520263672,
+      "learning_rate": 6.613260610192603e-06,
+      "loss": 9.952266693115234,
+      "step": 2640
+    },
+    {
+      "epoch": 1.2241915065024744,
+      "grad_norm": 3.693415880203247,
+      "learning_rate": 6.579171637975116e-06,
+      "loss": 9.408029174804687,
+      "step": 2660
+    },
+    {
+      "epoch": 1.2333985498906663,
+      "grad_norm": 3.049222707748413,
+      "learning_rate": 6.545082665757628e-06,
+      "loss": 9.574018096923828,
+      "step": 2680
+    },
+    {
+      "epoch": 1.2426055932788582,
+      "grad_norm": 3.4906601905822754,
+      "learning_rate": 6.510993693540141e-06,
+      "loss": 9.597813415527344,
+      "step": 2700
+    },
+    {
+      "epoch": 1.2518126366670503,
+      "grad_norm": 9.413856506347656,
+      "learning_rate": 6.476904721322652e-06,
+      "loss": 9.365705108642578,
+      "step": 2720
+    },
+    {
+      "epoch": 1.2610196800552422,
+      "grad_norm": 40.13945388793945,
+      "learning_rate": 6.442815749105165e-06,
+      "loss": 9.28409423828125,
+      "step": 2740
+    },
+    {
+      "epoch": 1.2702267234434341,
+      "grad_norm": 30.979570388793945,
+      "learning_rate": 6.408726776887677e-06,
+      "loss": 9.220724487304688,
+      "step": 2760
+    },
+    {
+      "epoch": 1.2794337668316262,
+      "grad_norm": 31.568735122680664,
+      "learning_rate": 6.37463780467019e-06,
+      "loss": 9.480786895751953,
+      "step": 2780
+    },
+    {
+      "epoch": 1.2886408102198181,
+      "grad_norm": 5.80890417098999,
+      "learning_rate": 6.340548832452702e-06,
+      "loss": 9.474260711669922,
+      "step": 2800
+    },
+    {
+      "epoch": 1.2886408102198181,
+      "eval_acc_lang_assamese": 0.9066666666666666,
+      "eval_acc_lang_bengali": 0.12,
+      "eval_acc_lang_bodo": 0.25333333333333335,
+      "eval_acc_lang_dogri": 0.07333333333333333,
+      "eval_acc_lang_gujarati": 0.6466666666666666,
+      "eval_acc_lang_hindi": 0.02,
+      "eval_acc_lang_kannada": 0.58,
+      "eval_acc_lang_kashmiri": 0.22666666666666666,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.3333333333333333,
+      "eval_acc_lang_manipuri": 0.17333333333333334,
+      "eval_acc_lang_marathi": 0.6266666666666667,
+      "eval_acc_lang_nepali": 0.18666666666666668,
+      "eval_acc_lang_odia": 0.29333333333333333,
+      "eval_acc_lang_punjabi": 0.76,
+      "eval_acc_lang_sanskrit": 0.35333333333333333,
+      "eval_acc_lang_santali": 0.02666666666666667,
+      "eval_acc_lang_sindhi": 0.013333333333333334,
+      "eval_acc_lang_tamil": 0.94,
+      "eval_acc_lang_telugu": 0.013333333333333334,
+      "eval_acc_lang_urdu": 0.7133333333333334,
+      "eval_accuracy": 0.33,
+      "eval_loss": 2.6052470207214355,
+      "eval_macro_f1": 0.2694894488517238,
+      "eval_runtime": 260.9869,
+      "eval_samples_per_second": 12.644,
+      "eval_steps_per_second": 12.644,
+      "step": 2800
+    },
+    {
+      "epoch": 1.29784785360801,
+      "grad_norm": 15.070606231689453,
+      "learning_rate": 6.3064598602352145e-06,
+      "loss": 9.646395874023437,
+      "step": 2820
+    },
+    {
+      "epoch": 1.3070548969962021,
+      "grad_norm": 7.8080244064331055,
+      "learning_rate": 6.272370888017727e-06,
+      "loss": 9.313636779785156,
+      "step": 2840
+    },
+    {
+      "epoch": 1.316261940384394,
+      "grad_norm": 34.70302200317383,
+      "learning_rate": 6.238281915800239e-06,
+      "loss": 9.47440185546875,
+      "step": 2860
+    },
+    {
+      "epoch": 1.325468983772586,
+      "grad_norm": 5.046064376831055,
+      "learning_rate": 6.204192943582752e-06,
+      "loss": 9.810394287109375,
+      "step": 2880
+    },
+    {
+      "epoch": 1.334676027160778,
+      "grad_norm": 19.929567337036133,
+      "learning_rate": 6.170103971365263e-06,
+      "loss": 9.368276214599609,
+      "step": 2900
+    },
+    {
+      "epoch": 1.34388307054897,
+      "grad_norm": 9.362757682800293,
+      "learning_rate": 6.136014999147776e-06,
+      "loss": 9.050435638427734,
+      "step": 2920
+    },
+    {
+      "epoch": 1.3530901139371618,
+      "grad_norm": 113.7523422241211,
+      "learning_rate": 6.101926026930288e-06,
+      "loss": 9.558273315429688,
+      "step": 2940
+    },
+    {
+      "epoch": 1.362297157325354,
+      "grad_norm": 64.00821685791016,
+      "learning_rate": 6.067837054712801e-06,
+      "loss": 9.05220718383789,
+      "step": 2960
+    },
+    {
+      "epoch": 1.3715042007135458,
+      "grad_norm": 27.781234741210938,
+      "learning_rate": 6.033748082495314e-06,
+      "loss": 9.144373321533203,
+      "step": 2980
+    },
+    {
+      "epoch": 1.3807112441017377,
+      "grad_norm": 3.4019408226013184,
+      "learning_rate": 5.9996591102778256e-06,
+      "loss": 9.537810516357421,
+      "step": 3000
+    },
+    {
+      "epoch": 1.3807112441017377,
+      "eval_acc_lang_assamese": 0.74,
+      "eval_acc_lang_bengali": 0.14,
+      "eval_acc_lang_bodo": 0.30666666666666664,
+      "eval_acc_lang_dogri": 0.08666666666666667,
+      "eval_acc_lang_gujarati": 0.7333333333333333,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.6466666666666666,
+      "eval_acc_lang_kashmiri": 0.5,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.4533333333333333,
+      "eval_acc_lang_manipuri": 0.3466666666666667,
+      "eval_acc_lang_marathi": 0.7733333333333333,
+      "eval_acc_lang_nepali": 0.04,
+      "eval_acc_lang_odia": 0.25333333333333335,
+      "eval_acc_lang_punjabi": 0.82,
+      "eval_acc_lang_sanskrit": 0.18666666666666668,
+      "eval_acc_lang_santali": 0.02,
+      "eval_acc_lang_sindhi": 0.006666666666666667,
+      "eval_acc_lang_tamil": 0.8666666666666667,
+      "eval_acc_lang_telugu": 0.013333333333333334,
+      "eval_acc_lang_urdu": 0.7466666666666667,
+      "eval_accuracy": 0.3490909090909091,
+      "eval_loss": 2.5599963665008545,
+      "eval_macro_f1": 0.28312056527297647,
+      "eval_runtime": 261.9676,
+      "eval_samples_per_second": 12.597,
+      "eval_steps_per_second": 12.597,
+      "step": 3000
+    },
+    {
+      "epoch": 1.3899182874899298,
+      "grad_norm": 8.382973670959473,
+      "learning_rate": 5.965570138060338e-06,
+      "loss": 9.320288848876952,
+      "step": 3020
+    },
+    {
+      "epoch": 1.3991253308781217,
+      "grad_norm": 7.551196575164795,
+      "learning_rate": 5.93148116584285e-06,
+      "loss": 9.437675476074219,
+      "step": 3040
+    },
+    {
+      "epoch": 1.4083323742663136,
+      "grad_norm": 7.3134589195251465,
+      "learning_rate": 5.897392193625363e-06,
+      "loss": 9.083830261230469,
+      "step": 3060
+    },
+    {
+      "epoch": 1.4175394176545058,
+      "grad_norm": 45.439613342285156,
+      "learning_rate": 5.863303221407875e-06,
+      "loss": 8.814441680908203,
+      "step": 3080
+    },
+    {
+      "epoch": 1.4267464610426976,
+      "grad_norm": 3.2545523643493652,
+      "learning_rate": 5.829214249190387e-06,
+      "loss": 9.330192565917969,
+      "step": 3100
+    },
+    {
+      "epoch": 1.4359535044308895,
+      "grad_norm": 5.396946430206299,
+      "learning_rate": 5.795125276972899e-06,
+      "loss": 8.890927124023438,
+      "step": 3120
+    },
+    {
+      "epoch": 1.4451605478190817,
+      "grad_norm": 20.34380531311035,
+      "learning_rate": 5.761036304755412e-06,
+      "loss": 9.207733917236329,
+      "step": 3140
+    },
+    {
+      "epoch": 1.4543675912072735,
+      "grad_norm": 3.1726508140563965,
+      "learning_rate": 5.726947332537925e-06,
+      "loss": 8.928741455078125,
+      "step": 3160
+    },
+    {
+      "epoch": 1.4635746345954654,
+      "grad_norm": 2.999864101409912,
+      "learning_rate": 5.692858360320437e-06,
+      "loss": 8.999215698242187,
+      "step": 3180
+    },
+    {
+      "epoch": 1.4727816779836576,
+      "grad_norm": 30.504886627197266,
+      "learning_rate": 5.6587693881029495e-06,
+      "loss": 9.495170593261719,
+      "step": 3200
+    },
+    {
+      "epoch": 1.4727816779836576,
+      "eval_acc_lang_assamese": 0.78,
+      "eval_acc_lang_bengali": 0.14,
+      "eval_acc_lang_bodo": 0.36666666666666664,
+      "eval_acc_lang_dogri": 0.06666666666666667,
+      "eval_acc_lang_gujarati": 0.54,
+      "eval_acc_lang_hindi": 0.02,
+      "eval_acc_lang_kannada": 0.43333333333333335,
+      "eval_acc_lang_kashmiri": 0.6666666666666666,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.31333333333333335,
+      "eval_acc_lang_manipuri": 0.42,
+      "eval_acc_lang_marathi": 0.5466666666666666,
+      "eval_acc_lang_nepali": 0.16666666666666666,
+      "eval_acc_lang_odia": 0.38666666666666666,
+      "eval_acc_lang_punjabi": 0.8666666666666667,
+      "eval_acc_lang_sanskrit": 0.62,
+      "eval_acc_lang_santali": 0.07333333333333333,
+      "eval_acc_lang_sindhi": 0.02666666666666667,
+      "eval_acc_lang_tamil": 0.9333333333333333,
+      "eval_acc_lang_telugu": 0.44,
+      "eval_acc_lang_urdu": 0.5533333333333333,
+      "eval_accuracy": 0.38,
+      "eval_loss": 2.503720998764038,
+      "eval_macro_f1": 0.33738668197094185,
+      "eval_runtime": 261.2569,
+      "eval_samples_per_second": 12.631,
+      "eval_steps_per_second": 12.631,
+      "step": 3200
+    },
+    {
+      "epoch": 1.4819887213718494,
+      "grad_norm": 9.927780151367188,
+      "learning_rate": 5.6246804158854615e-06,
+      "loss": 8.968518829345703,
+      "step": 3220
+    },
+    {
+      "epoch": 1.4911957647600413,
+      "grad_norm": 34.01671600341797,
+      "learning_rate": 5.590591443667974e-06,
+      "loss": 8.604471588134766,
+      "step": 3240
+    },
+    {
+      "epoch": 1.5004028081482335,
+      "grad_norm": 14.318143844604492,
+      "learning_rate": 5.556502471450487e-06,
+      "loss": 8.72716827392578,
+      "step": 3260
+    },
+    {
+      "epoch": 1.5096098515364254,
+      "grad_norm": 50.600807189941406,
+      "learning_rate": 5.522413499232998e-06,
+      "loss": 9.03592529296875,
+      "step": 3280
+    },
+    {
+      "epoch": 1.5188168949246172,
+      "grad_norm": 5.198680400848389,
+      "learning_rate": 5.48832452701551e-06,
+      "loss": 8.655828094482422,
+      "step": 3300
+    },
+    {
+      "epoch": 1.5280239383128094,
+      "grad_norm": 19.342702865600586,
+      "learning_rate": 5.454235554798023e-06,
+      "loss": 9.104190826416016,
+      "step": 3320
+    },
+    {
+      "epoch": 1.5372309817010013,
+      "grad_norm": 24.066482543945312,
+      "learning_rate": 5.420146582580536e-06,
+      "loss": 8.965599822998048,
+      "step": 3340
+    },
+    {
+      "epoch": 1.5464380250891931,
+      "grad_norm": 61.656131744384766,
+      "learning_rate": 5.386057610363048e-06,
+      "loss": 8.693221282958984,
+      "step": 3360
+    },
+    {
+      "epoch": 1.5556450684773853,
+      "grad_norm": 6.437450885772705,
+      "learning_rate": 5.351968638145561e-06,
+      "loss": 8.724163818359376,
+      "step": 3380
+    },
+    {
+      "epoch": 1.5648521118655772,
+      "grad_norm": 88.1909408569336,
+      "learning_rate": 5.317879665928073e-06,
+      "loss": 8.903561401367188,
+      "step": 3400
+    },
+    {
+      "epoch": 1.5648521118655772,
+      "eval_acc_lang_assamese": 0.8133333333333334,
+      "eval_acc_lang_bengali": 0.18666666666666668,
+      "eval_acc_lang_bodo": 0.3333333333333333,
+      "eval_acc_lang_dogri": 0.07333333333333333,
+      "eval_acc_lang_gujarati": 0.66,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.5,
+      "eval_acc_lang_kashmiri": 0.5533333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.013333333333333334,
+      "eval_acc_lang_malayalam": 0.54,
+      "eval_acc_lang_manipuri": 0.22,
+      "eval_acc_lang_marathi": 0.76,
+      "eval_acc_lang_nepali": 0.25333333333333335,
+      "eval_acc_lang_odia": 0.18666666666666668,
+      "eval_acc_lang_punjabi": 0.7933333333333333,
+      "eval_acc_lang_sanskrit": 0.38666666666666666,
+      "eval_acc_lang_santali": 0.04,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.8933333333333333,
+      "eval_acc_lang_telugu": 0.6533333333333333,
+      "eval_acc_lang_urdu": 0.76,
+      "eval_accuracy": 0.3933333333333333,
+      "eval_loss": 2.501538038253784,
+      "eval_macro_f1": 0.3428288951656734,
+      "eval_runtime": 257.7697,
+      "eval_samples_per_second": 12.802,
+      "eval_steps_per_second": 12.802,
+      "step": 3400
+    },
+    {
+      "epoch": 1.574059155253769,
+      "grad_norm": 26.225902557373047,
+      "learning_rate": 5.283790693710585e-06,
+      "loss": 8.959174346923827,
+      "step": 3420
+    },
+    {
+      "epoch": 1.5832661986419612,
+      "grad_norm": 6.551172733306885,
+      "learning_rate": 5.249701721493098e-06,
+      "loss": 9.265153503417968,
+      "step": 3440
+    },
+    {
+      "epoch": 1.592473242030153,
+      "grad_norm": 10.601354598999023,
+      "learning_rate": 5.215612749275609e-06,
+      "loss": 8.638603973388673,
+      "step": 3460
+    },
+    {
+      "epoch": 1.601680285418345,
+      "grad_norm": 101.07687377929688,
+      "learning_rate": 5.181523777058121e-06,
+      "loss": 8.872442626953125,
+      "step": 3480
+    },
+    {
+      "epoch": 1.610887328806537,
+      "grad_norm": 5.634634494781494,
+      "learning_rate": 5.147434804840634e-06,
+      "loss": 9.044099426269531,
+      "step": 3500
+    },
+    {
+      "epoch": 1.620094372194729,
+      "grad_norm": 9.48183822631836,
+      "learning_rate": 5.113345832623147e-06,
+      "loss": 8.458357238769532,
+      "step": 3520
+    },
+    {
+      "epoch": 1.6293014155829209,
+      "grad_norm": 31.680912017822266,
+      "learning_rate": 5.079256860405659e-06,
+      "loss": 8.798027801513673,
+      "step": 3540
+    },
+    {
+      "epoch": 1.638508458971113,
+      "grad_norm": 6.186283111572266,
+      "learning_rate": 5.045167888188172e-06,
+      "loss": 8.721733856201173,
+      "step": 3560
+    },
+    {
+      "epoch": 1.6477155023593049,
+      "grad_norm": 8.865800857543945,
+      "learning_rate": 5.011078915970684e-06,
+      "loss": 8.64636459350586,
+      "step": 3580
+    },
+    {
+      "epoch": 1.6569225457474968,
+      "grad_norm": 20.93251609802246,
+      "learning_rate": 4.976989943753196e-06,
+      "loss": 8.779573822021485,
+      "step": 3600
+    },
+    {
+      "epoch": 1.6569225457474968,
+      "eval_acc_lang_assamese": 0.82,
+      "eval_acc_lang_bengali": 0.12,
+      "eval_acc_lang_bodo": 0.32666666666666666,
+      "eval_acc_lang_dogri": 0.09333333333333334,
+      "eval_acc_lang_gujarati": 0.5333333333333333,
+      "eval_acc_lang_hindi": 0.013333333333333334,
+      "eval_acc_lang_kannada": 0.4266666666666667,
+      "eval_acc_lang_kashmiri": 0.82,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.5866666666666667,
+      "eval_acc_lang_manipuri": 0.28,
+      "eval_acc_lang_marathi": 0.6066666666666667,
+      "eval_acc_lang_nepali": 0.12666666666666668,
+      "eval_acc_lang_odia": 0.38666666666666666,
+      "eval_acc_lang_punjabi": 0.8066666666666666,
+      "eval_acc_lang_sanskrit": 0.6133333333333333,
+      "eval_acc_lang_santali": 0.14,
+      "eval_acc_lang_sindhi": 0.1,
+      "eval_acc_lang_tamil": 0.88,
+      "eval_acc_lang_telugu": 0.5933333333333334,
+      "eval_acc_lang_urdu": 0.5666666666666667,
+      "eval_accuracy": 0.4018181818181818,
+      "eval_loss": 2.4645960330963135,
+      "eval_macro_f1": 0.35882225117786476,
+      "eval_runtime": 262.72,
+      "eval_samples_per_second": 12.561,
+      "eval_steps_per_second": 12.561,
+      "step": 3600
+    },
+    {
+      "epoch": 1.6661295891356889,
+      "grad_norm": 12.740114212036133,
+      "learning_rate": 4.9429009715357085e-06,
+      "loss": 8.750955200195312,
+      "step": 3620
+    },
+    {
+      "epoch": 1.6753366325238808,
+      "grad_norm": 4.338772773742676,
+      "learning_rate": 4.908811999318221e-06,
+      "loss": 8.186531829833985,
+      "step": 3640
+    },
+    {
+      "epoch": 1.6845436759120727,
+      "grad_norm": 14.265966415405273,
+      "learning_rate": 4.874723027100733e-06,
+      "loss": 8.35286865234375,
+      "step": 3660
+    },
+    {
+      "epoch": 1.6937507193002648,
+      "grad_norm": 5.069726467132568,
+      "learning_rate": 4.840634054883246e-06,
+      "loss": 8.611310577392578,
+      "step": 3680
+    },
+    {
+      "epoch": 1.7029577626884567,
+      "grad_norm": 41.379886627197266,
+      "learning_rate": 4.806545082665758e-06,
+      "loss": 8.640813446044922,
+      "step": 3700
+    },
+    {
+      "epoch": 1.7121648060766486,
+      "grad_norm": 3.994537115097046,
+      "learning_rate": 4.77245611044827e-06,
+      "loss": 8.796987915039063,
+      "step": 3720
+    },
+    {
+      "epoch": 1.7213718494648407,
+      "grad_norm": 22.967824935913086,
+      "learning_rate": 4.738367138230783e-06,
+      "loss": 8.788732147216797,
+      "step": 3740
+    },
+    {
+      "epoch": 1.7305788928530326,
+      "grad_norm": 17.800615310668945,
+      "learning_rate": 4.704278166013295e-06,
+      "loss": 8.897048187255859,
+      "step": 3760
+    },
+    {
+      "epoch": 1.7397859362412245,
+      "grad_norm": 31.17499542236328,
+      "learning_rate": 4.670189193795808e-06,
+      "loss": 8.584001159667968,
+      "step": 3780
+    },
+    {
+      "epoch": 1.7489929796294166,
+      "grad_norm": 51.99752426147461,
+      "learning_rate": 4.63610022157832e-06,
+      "loss": 8.760518646240234,
+      "step": 3800
+    },
+    {
+      "epoch": 1.7489929796294166,
+      "eval_acc_lang_assamese": 0.7933333333333333,
+      "eval_acc_lang_bengali": 0.18666666666666668,
+      "eval_acc_lang_bodo": 0.4066666666666667,
+      "eval_acc_lang_dogri": 0.07333333333333333,
+      "eval_acc_lang_gujarati": 0.7,
+      "eval_acc_lang_hindi": 0.006666666666666667,
+      "eval_acc_lang_kannada": 0.5066666666666667,
+      "eval_acc_lang_kashmiri": 0.7,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.8533333333333334,
+      "eval_acc_lang_manipuri": 0.49333333333333335,
+      "eval_acc_lang_marathi": 0.6733333333333333,
+      "eval_acc_lang_nepali": 0.15333333333333332,
+      "eval_acc_lang_odia": 0.23333333333333334,
+      "eval_acc_lang_punjabi": 0.8533333333333334,
+      "eval_acc_lang_sanskrit": 0.6933333333333334,
+      "eval_acc_lang_santali": 0.08666666666666667,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.7533333333333333,
+      "eval_acc_lang_telugu": 0.7866666666666666,
+      "eval_acc_lang_urdu": 0.6266666666666667,
+      "eval_accuracy": 0.43696969696969695,
+      "eval_loss": 2.417985439300537,
+      "eval_macro_f1": 0.38409539405867804,
+      "eval_runtime": 262.0839,
+      "eval_samples_per_second": 12.591,
+      "eval_steps_per_second": 12.591,
+      "step": 3800
+    },
+    {
+      "epoch": 1.7582000230176085,
+      "grad_norm": 3.7230329513549805,
+      "learning_rate": 4.602011249360832e-06,
+      "loss": 8.529090881347656,
+      "step": 3820
+    },
+    {
+      "epoch": 1.7674070664058004,
+      "grad_norm": 5.9295735359191895,
+      "learning_rate": 4.567922277143344e-06,
+      "loss": 8.266632080078125,
+      "step": 3840
+    },
+    {
+      "epoch": 1.7766141097939925,
+      "grad_norm": 11.147181510925293,
+      "learning_rate": 4.533833304925857e-06,
+      "loss": 8.521354675292969,
+      "step": 3860
+    },
+    {
+      "epoch": 1.7858211531821844,
+      "grad_norm": 20.731903076171875,
+      "learning_rate": 4.499744332708369e-06,
+      "loss": 8.536217498779298,
+      "step": 3880
+    },
+    {
+      "epoch": 1.7950281965703763,
+      "grad_norm": 4.785042762756348,
+      "learning_rate": 4.465655360490881e-06,
+      "loss": 8.384461975097656,
+      "step": 3900
+    },
+    {
+      "epoch": 1.8042352399585684,
+      "grad_norm": 175.0888214111328,
+      "learning_rate": 4.431566388273394e-06,
+      "loss": 8.133718872070313,
+      "step": 3920
+    },
+    {
+      "epoch": 1.8134422833467603,
+      "grad_norm": 7.9408650398254395,
+      "learning_rate": 4.397477416055907e-06,
+      "loss": 8.749102020263672,
+      "step": 3940
+    },
+    {
+      "epoch": 1.8226493267349522,
+      "grad_norm": 6.546505928039551,
+      "learning_rate": 4.363388443838419e-06,
+      "loss": 7.936082458496093,
+      "step": 3960
+    },
+    {
+      "epoch": 1.8318563701231443,
+      "grad_norm": 8.679596900939941,
+      "learning_rate": 4.329299471620931e-06,
+      "loss": 7.964134979248047,
+      "step": 3980
+    },
+    {
+      "epoch": 1.8410634135113362,
+      "grad_norm": 40.92432403564453,
+      "learning_rate": 4.2952104994034435e-06,
+      "loss": 8.401781463623047,
+      "step": 4000
+    },
+    {
+      "epoch": 1.8410634135113362,
+      "eval_acc_lang_assamese": 0.8533333333333334,
+      "eval_acc_lang_bengali": 0.22,
+      "eval_acc_lang_bodo": 0.4,
+      "eval_acc_lang_dogri": 0.08666666666666667,
+      "eval_acc_lang_gujarati": 0.7266666666666667,
+      "eval_acc_lang_hindi": 0.013333333333333334,
+      "eval_acc_lang_kannada": 0.7866666666666666,
+      "eval_acc_lang_kashmiri": 0.5,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.72,
+      "eval_acc_lang_manipuri": 0.38666666666666666,
+      "eval_acc_lang_marathi": 0.6533333333333333,
+      "eval_acc_lang_nepali": 0.08,
+      "eval_acc_lang_odia": 0.1,
+      "eval_acc_lang_punjabi": 0.8066666666666666,
+      "eval_acc_lang_sanskrit": 0.8,
+      "eval_acc_lang_santali": 0.08,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.74,
+      "eval_acc_lang_telugu": 0.6266666666666667,
+      "eval_acc_lang_urdu": 0.6866666666666666,
+      "eval_accuracy": 0.4212121212121212,
+      "eval_loss": 2.447998046875,
+      "eval_macro_f1": 0.35761596353842545,
+      "eval_runtime": 257.0944,
+      "eval_samples_per_second": 12.836,
+      "eval_steps_per_second": 12.836,
+      "step": 4000
+    },
+    {
+      "epoch": 1.850270456899528,
+      "grad_norm": 29.117368698120117,
+      "learning_rate": 4.2611215271859555e-06,
+      "loss": 8.552525329589844,
+      "step": 4020
+    },
+    {
+      "epoch": 1.8594775002877202,
+      "grad_norm": 103.7231674194336,
+      "learning_rate": 4.227032554968468e-06,
+      "loss": 8.599235534667969,
+      "step": 4040
+    },
+    {
+      "epoch": 1.868684543675912,
+      "grad_norm": 13.141155242919922,
+      "learning_rate": 4.19294358275098e-06,
+      "loss": 8.561671447753906,
+      "step": 4060
+    },
+    {
+      "epoch": 1.877891587064104,
+      "grad_norm": 366.4666442871094,
+      "learning_rate": 4.158854610533492e-06,
+      "loss": 8.49438934326172,
+      "step": 4080
+    },
+    {
+      "epoch": 1.887098630452296,
+      "grad_norm": 48.868064880371094,
+      "learning_rate": 4.124765638316005e-06,
+      "loss": 8.467496490478515,
+      "step": 4100
+    },
+    {
+      "epoch": 1.896305673840488,
+      "grad_norm": 25.938865661621094,
+      "learning_rate": 4.090676666098518e-06,
+      "loss": 7.8987579345703125,
+      "step": 4120
+    },
+    {
+      "epoch": 1.9055127172286799,
+      "grad_norm": 3.329667806625366,
+      "learning_rate": 4.05658769388103e-06,
+      "loss": 8.371361541748048,
+      "step": 4140
+    },
+    {
+      "epoch": 1.914719760616872,
+      "grad_norm": 88.17935943603516,
+      "learning_rate": 4.022498721663542e-06,
+      "loss": 7.738985443115235,
+      "step": 4160
+    },
+    {
+      "epoch": 1.9239268040050639,
+      "grad_norm": 87.83411407470703,
+      "learning_rate": 3.988409749446055e-06,
+      "loss": 8.222098541259765,
+      "step": 4180
+    },
+    {
+      "epoch": 1.9331338473932558,
+      "grad_norm": 13.079228401184082,
+      "learning_rate": 3.954320777228567e-06,
+      "loss": 7.816661834716797,
+      "step": 4200
+    },
+    {
+      "epoch": 1.9331338473932558,
+      "eval_acc_lang_assamese": 0.7866666666666666,
+      "eval_acc_lang_bengali": 0.24666666666666667,
+      "eval_acc_lang_bodo": 0.47333333333333333,
+      "eval_acc_lang_dogri": 0.12,
+      "eval_acc_lang_gujarati": 0.6266666666666667,
+      "eval_acc_lang_hindi": 0.006666666666666667,
+      "eval_acc_lang_kannada": 0.72,
+      "eval_acc_lang_kashmiri": 0.5333333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.76,
+      "eval_acc_lang_manipuri": 0.6133333333333333,
+      "eval_acc_lang_marathi": 0.6333333333333333,
+      "eval_acc_lang_nepali": 0.14666666666666667,
+      "eval_acc_lang_odia": 0.11333333333333333,
+      "eval_acc_lang_punjabi": 0.94,
+      "eval_acc_lang_sanskrit": 0.62,
+      "eval_acc_lang_santali": 0.06,
+      "eval_acc_lang_sindhi": 0.02,
+      "eval_acc_lang_tamil": 0.7533333333333333,
+      "eval_acc_lang_telugu": 0.68,
+      "eval_acc_lang_urdu": 0.6,
+      "eval_accuracy": 0.4296969696969697,
+      "eval_loss": 2.4126229286193848,
+      "eval_macro_f1": 0.3840012874029895,
+      "eval_runtime": 256.2481,
+      "eval_samples_per_second": 12.878,
+      "eval_steps_per_second": 12.878,
+      "step": 4200
+    },
+    {
+      "epoch": 1.942340890781448,
+      "grad_norm": 18.120655059814453,
+      "learning_rate": 3.9202318050110794e-06,
+      "loss": 8.48748321533203,
+      "step": 4220
+    },
+    {
+      "epoch": 1.9515479341696398,
+      "grad_norm": 6.106363296508789,
+      "learning_rate": 3.886142832793592e-06,
+      "loss": 8.237397766113281,
+      "step": 4240
+    },
+    {
+      "epoch": 1.9607549775578317,
+      "grad_norm": 5.037970542907715,
+      "learning_rate": 3.852053860576103e-06,
+      "loss": 8.333009338378906,
+      "step": 4260
+    },
+    {
+      "epoch": 1.9699620209460238,
+      "grad_norm": 8.359721183776855,
+      "learning_rate": 3.817964888358616e-06,
+      "loss": 8.409180450439454,
+      "step": 4280
+    },
+    {
+      "epoch": 1.9791690643342157,
+      "grad_norm": 3.511631965637207,
+      "learning_rate": 3.7838759161411286e-06,
+      "loss": 8.684323120117188,
+      "step": 4300
+    },
+    {
+      "epoch": 1.9883761077224076,
+      "grad_norm": 12.497472763061523,
+      "learning_rate": 3.749786943923641e-06,
+      "loss": 8.145748901367188,
+      "step": 4320
+    },
+    {
+      "epoch": 1.9975831511105997,
+      "grad_norm": 15.889458656311035,
+      "learning_rate": 3.715697971706153e-06,
+      "loss": 8.234443664550781,
+      "step": 4340
+    },
+    {
+      "epoch": 2.0064449303717344,
+      "grad_norm": 9.011490821838379,
+      "learning_rate": 3.6816089994886658e-06,
+      "loss": 8.07651138305664,
+      "step": 4360
+    },
+    {
+      "epoch": 2.0156519737599266,
+      "grad_norm": 6.853878021240234,
+      "learning_rate": 3.647520027271178e-06,
+      "loss": 7.79071044921875,
+      "step": 4380
+    },
+    {
+      "epoch": 2.0248590171481182,
+      "grad_norm": 3.9093148708343506,
+      "learning_rate": 3.6134310550536906e-06,
+      "loss": 8.392910766601563,
+      "step": 4400
+    },
+    {
+      "epoch": 2.0248590171481182,
+      "eval_acc_lang_assamese": 0.7933333333333333,
+      "eval_acc_lang_bengali": 0.28,
+      "eval_acc_lang_bodo": 0.4,
+      "eval_acc_lang_dogri": 0.08666666666666667,
+      "eval_acc_lang_gujarati": 0.7066666666666667,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.56,
+      "eval_acc_lang_kashmiri": 0.5933333333333334,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.5466666666666666,
+      "eval_acc_lang_manipuri": 0.5733333333333334,
+      "eval_acc_lang_marathi": 0.6933333333333334,
+      "eval_acc_lang_nepali": 0.22666666666666666,
+      "eval_acc_lang_odia": 0.07333333333333333,
+      "eval_acc_lang_punjabi": 0.86,
+      "eval_acc_lang_sanskrit": 0.7266666666666667,
+      "eval_acc_lang_santali": 0.02,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.8,
+      "eval_acc_lang_telugu": 0.82,
+      "eval_acc_lang_urdu": 0.7266666666666667,
+      "eval_accuracy": 0.43272727272727274,
+      "eval_loss": 2.3925223350524902,
+      "eval_macro_f1": 0.3753157969195567,
+      "eval_runtime": 260.7399,
+      "eval_samples_per_second": 12.656,
+      "eval_steps_per_second": 12.656,
+      "step": 4400
+    },
+    {
+      "epoch": 2.0340660605363103,
+      "grad_norm": 36.01063537597656,
+      "learning_rate": 3.579342082836203e-06,
+      "loss": 7.68023910522461,
+      "step": 4420
+    },
+    {
+      "epoch": 2.0432731039245025,
+      "grad_norm": 3.872614860534668,
+      "learning_rate": 3.545253110618715e-06,
+      "loss": 8.218215942382812,
+      "step": 4440
+    },
+    {
+      "epoch": 2.052480147312694,
+      "grad_norm": 6.7625203132629395,
+      "learning_rate": 3.5111641384012273e-06,
+      "loss": 7.918674468994141,
+      "step": 4460
+    },
+    {
+      "epoch": 2.0616871907008862,
+      "grad_norm": 13.780928611755371,
+      "learning_rate": 3.4770751661837397e-06,
+      "loss": 8.172928619384766,
+      "step": 4480
+    },
+    {
+      "epoch": 2.0708942340890784,
+      "grad_norm": 162.0651397705078,
+      "learning_rate": 3.4429861939662525e-06,
+      "loss": 8.214759063720702,
+      "step": 4500
+    },
+    {
+      "epoch": 2.08010127747727,
+      "grad_norm": 7.5174031257629395,
+      "learning_rate": 3.408897221748765e-06,
+      "loss": 8.327149200439454,
+      "step": 4520
+    },
+    {
+      "epoch": 2.089308320865462,
+      "grad_norm": 36.55430603027344,
+      "learning_rate": 3.374808249531277e-06,
+      "loss": 7.881687927246094,
+      "step": 4540
+    },
+    {
+      "epoch": 2.0985153642536543,
+      "grad_norm": 9.134483337402344,
+      "learning_rate": 3.3407192773137893e-06,
+      "loss": 7.9212287902832035,
+      "step": 4560
+    },
+    {
+      "epoch": 2.107722407641846,
+      "grad_norm": 8.455951690673828,
+      "learning_rate": 3.3066303050963017e-06,
+      "loss": 8.486531829833984,
+      "step": 4580
+    },
+    {
+      "epoch": 2.116929451030038,
+      "grad_norm": 22.332012176513672,
+      "learning_rate": 3.272541332878814e-06,
+      "loss": 8.200118255615234,
+      "step": 4600
+    },
+    {
+      "epoch": 2.116929451030038,
+      "eval_acc_lang_assamese": 0.76,
+      "eval_acc_lang_bengali": 0.26,
+      "eval_acc_lang_bodo": 0.48,
+      "eval_acc_lang_dogri": 0.09333333333333334,
+      "eval_acc_lang_gujarati": 0.6666666666666666,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.54,
+      "eval_acc_lang_kashmiri": 0.5933333333333334,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.8266666666666667,
+      "eval_acc_lang_manipuri": 0.5666666666666667,
+      "eval_acc_lang_marathi": 0.7466666666666667,
+      "eval_acc_lang_nepali": 0.32,
+      "eval_acc_lang_odia": 0.1,
+      "eval_acc_lang_punjabi": 0.82,
+      "eval_acc_lang_sanskrit": 0.76,
+      "eval_acc_lang_santali": 0.02,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.8066666666666666,
+      "eval_acc_lang_telugu": 0.7,
+      "eval_acc_lang_urdu": 0.7,
+      "eval_accuracy": 0.44515151515151513,
+      "eval_loss": 2.3675081729888916,
+      "eval_macro_f1": 0.3858059547385011,
+      "eval_runtime": 258.9065,
+      "eval_samples_per_second": 12.746,
+      "eval_steps_per_second": 12.746,
+      "step": 4600
+    },
+    {
+      "epoch": 2.1261364944182297,
+      "grad_norm": 4.44063663482666,
+      "learning_rate": 3.238452360661326e-06,
+      "loss": 8.034445190429688,
+      "step": 4620
+    },
+    {
+      "epoch": 2.135343537806422,
+      "grad_norm": 19.523624420166016,
+      "learning_rate": 3.2043633884438384e-06,
+      "loss": 7.805905151367187,
+      "step": 4640
+    },
+    {
+      "epoch": 2.144550581194614,
+      "grad_norm": 4.526165008544922,
+      "learning_rate": 3.170274416226351e-06,
+      "loss": 8.07452850341797,
+      "step": 4660
+    },
+    {
+      "epoch": 2.1537576245828056,
+      "grad_norm": 211.5232391357422,
+      "learning_rate": 3.1361854440088636e-06,
+      "loss": 7.870165252685547,
+      "step": 4680
+    },
+    {
+      "epoch": 2.1629646679709977,
+      "grad_norm": 221.83822631835938,
+      "learning_rate": 3.102096471791376e-06,
+      "loss": 7.939310455322266,
+      "step": 4700
+    },
+    {
+      "epoch": 2.17217171135919,
+      "grad_norm": 29.134092330932617,
+      "learning_rate": 3.068007499573888e-06,
+      "loss": 8.194594573974609,
+      "step": 4720
+    },
+    {
+      "epoch": 2.1813787547473815,
+      "grad_norm": 338.2909240722656,
+      "learning_rate": 3.0339185273564004e-06,
+      "loss": 8.064730834960937,
+      "step": 4740
+    },
+    {
+      "epoch": 2.1905857981355736,
+      "grad_norm": 64.15180969238281,
+      "learning_rate": 2.9998295551389128e-06,
+      "loss": 8.093829345703124,
+      "step": 4760
+    },
+    {
+      "epoch": 2.1997928415237658,
+      "grad_norm": 82.5299301147461,
+      "learning_rate": 2.965740582921425e-06,
+      "loss": 8.345513916015625,
+      "step": 4780
+    },
+    {
+      "epoch": 2.2089998849119574,
+      "grad_norm": 681.4940795898438,
+      "learning_rate": 2.9316516107039376e-06,
+      "loss": 7.936968994140625,
+      "step": 4800
+    },
+    {
+      "epoch": 2.2089998849119574,
+      "eval_acc_lang_assamese": 0.8333333333333334,
+      "eval_acc_lang_bengali": 0.24666666666666667,
+      "eval_acc_lang_bodo": 0.5066666666666667,
+      "eval_acc_lang_dogri": 0.11333333333333333,
+      "eval_acc_lang_gujarati": 0.78,
+      "eval_acc_lang_hindi": 0.013333333333333334,
+      "eval_acc_lang_kannada": 0.6266666666666667,
+      "eval_acc_lang_kashmiri": 0.6466666666666666,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.76,
+      "eval_acc_lang_manipuri": 0.6133333333333333,
+      "eval_acc_lang_marathi": 0.7133333333333334,
+      "eval_acc_lang_nepali": 0.24,
+      "eval_acc_lang_odia": 0.17333333333333334,
+      "eval_acc_lang_punjabi": 0.8533333333333334,
+      "eval_acc_lang_sanskrit": 0.6933333333333334,
+      "eval_acc_lang_santali": 0.02,
+      "eval_acc_lang_sindhi": 0.0,
+      "eval_acc_lang_tamil": 0.7866666666666666,
+      "eval_acc_lang_telugu": 0.8,
+      "eval_acc_lang_urdu": 0.6866666666666666,
+      "eval_accuracy": 0.4593939393939394,
+      "eval_loss": 2.3470497131347656,
+      "eval_macro_f1": 0.40110988938252273,
+      "eval_runtime": 253.1753,
+      "eval_samples_per_second": 13.034,
+      "eval_steps_per_second": 13.034,
+      "step": 4800
+    },
+    {
+      "epoch": 2.2182069283001495,
+      "grad_norm": 11.457833290100098,
+      "learning_rate": 2.8975626384864495e-06,
+      "loss": 7.474211120605469,
+      "step": 4820
+    },
+    {
+      "epoch": 2.2274139716883417,
+      "grad_norm": 46.09517288208008,
+      "learning_rate": 2.8634736662689624e-06,
+      "loss": 8.06346435546875,
+      "step": 4840
+    },
+    {
+      "epoch": 2.2366210150765333,
+      "grad_norm": 24.381656646728516,
+      "learning_rate": 2.8293846940514748e-06,
+      "loss": 8.330960083007813,
+      "step": 4860
+    },
+    {
+      "epoch": 2.2458280584647254,
+      "grad_norm": 15.578411102294922,
+      "learning_rate": 2.795295721833987e-06,
+      "loss": 7.683683776855469,
+      "step": 4880
+    },
+    {
+      "epoch": 2.2550351018529176,
+      "grad_norm": 12.861096382141113,
+      "learning_rate": 2.761206749616499e-06,
+      "loss": 8.127821350097657,
+      "step": 4900
+    },
+    {
+      "epoch": 2.2642421452411092,
+      "grad_norm": 13.065528869628906,
+      "learning_rate": 2.7271177773990115e-06,
+      "loss": 7.7262626647949215,
+      "step": 4920
+    },
+    {
+      "epoch": 2.2734491886293013,
+      "grad_norm": 12.242549896240234,
+      "learning_rate": 2.693028805181524e-06,
+      "loss": 8.041641998291016,
+      "step": 4940
+    },
+    {
+      "epoch": 2.2826562320174935,
+      "grad_norm": 5.700547218322754,
+      "learning_rate": 2.6589398329640363e-06,
+      "loss": 8.157826232910157,
+      "step": 4960
+    },
+    {
+      "epoch": 2.291863275405685,
+      "grad_norm": 129.9991912841797,
+      "learning_rate": 2.624850860746549e-06,
+      "loss": 7.768639373779297,
+      "step": 4980
+    },
+    {
+      "epoch": 2.3010703187938772,
+      "grad_norm": 24.29576873779297,
+      "learning_rate": 2.5907618885290607e-06,
+      "loss": 7.523139953613281,
+      "step": 5000
+    },
+    {
+      "epoch": 2.3010703187938772,
+      "eval_acc_lang_assamese": 0.84,
+      "eval_acc_lang_bengali": 0.18,
+      "eval_acc_lang_bodo": 0.3466666666666667,
+      "eval_acc_lang_dogri": 0.11333333333333333,
+      "eval_acc_lang_gujarati": 0.7533333333333333,
+      "eval_acc_lang_hindi": 0.0,
+      "eval_acc_lang_kannada": 0.64,
+      "eval_acc_lang_kashmiri": 0.7,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.68,
+      "eval_acc_lang_manipuri": 0.5266666666666666,
+      "eval_acc_lang_marathi": 0.6066666666666667,
+      "eval_acc_lang_nepali": 0.3333333333333333,
+      "eval_acc_lang_odia": 0.15333333333333332,
+      "eval_acc_lang_punjabi": 0.8533333333333334,
+      "eval_acc_lang_sanskrit": 0.7333333333333333,
+      "eval_acc_lang_santali": 0.006666666666666667,
+      "eval_acc_lang_sindhi": 0.05333333333333334,
+      "eval_acc_lang_tamil": 0.8333333333333334,
+      "eval_acc_lang_telugu": 0.7066666666666667,
+      "eval_acc_lang_urdu": 0.6733333333333333,
+      "eval_accuracy": 0.44242424242424244,
+      "eval_loss": 2.348623275756836,
+      "eval_macro_f1": 0.3851348912190044,
+      "eval_runtime": 259.6193,
+      "eval_samples_per_second": 12.711,
+      "eval_steps_per_second": 12.711,
+      "step": 5000
+    },
+    {
+      "epoch": 2.3102773621820694,
+      "grad_norm": 51.348793029785156,
+      "learning_rate": 2.5566729163115735e-06,
+      "loss": 7.719129943847657,
+      "step": 5020
+    },
+    {
+      "epoch": 2.319484405570261,
+      "grad_norm": 3.6791458129882812,
+      "learning_rate": 2.522583944094086e-06,
+      "loss": 7.451311492919922,
+      "step": 5040
+    },
+    {
+      "epoch": 2.328691448958453,
+      "grad_norm": 10.494189262390137,
+      "learning_rate": 2.488494971876598e-06,
+      "loss": 7.936888885498047,
+      "step": 5060
+    },
+    {
+      "epoch": 2.3378984923466453,
+      "grad_norm": 18.514612197875977,
+      "learning_rate": 2.4544059996591107e-06,
+      "loss": 8.021769714355468,
+      "step": 5080
+    },
+    {
+      "epoch": 2.347105535734837,
+      "grad_norm": 37.810691833496094,
+      "learning_rate": 2.420317027441623e-06,
+      "loss": 8.462178039550782,
+      "step": 5100
+    },
+    {
+      "epoch": 2.356312579123029,
+      "grad_norm": 7.6197943687438965,
+      "learning_rate": 2.386228055224135e-06,
+      "loss": 7.75891342163086,
+      "step": 5120
+    },
+    {
+      "epoch": 2.365519622511221,
+      "grad_norm": 4.778458118438721,
+      "learning_rate": 2.3521390830066474e-06,
+      "loss": 7.813785552978516,
+      "step": 5140
+    },
+    {
+      "epoch": 2.374726665899413,
+      "grad_norm": 7.930220127105713,
+      "learning_rate": 2.31805011078916e-06,
+      "loss": 7.725353240966797,
+      "step": 5160
+    },
+    {
+      "epoch": 2.383933709287605,
+      "grad_norm": 38.07170486450195,
+      "learning_rate": 2.283961138571672e-06,
+      "loss": 7.550286865234375,
+      "step": 5180
+    },
+    {
+      "epoch": 2.393140752675797,
+      "grad_norm": 8.493361473083496,
+      "learning_rate": 2.2498721663541846e-06,
+      "loss": 7.999848937988281,
+      "step": 5200
+    },
+    {
+      "epoch": 2.393140752675797,
+      "eval_acc_lang_assamese": 0.8133333333333334,
+      "eval_acc_lang_bengali": 0.16,
+      "eval_acc_lang_bodo": 0.47333333333333333,
+      "eval_acc_lang_dogri": 0.13333333333333333,
+      "eval_acc_lang_gujarati": 0.68,
+      "eval_acc_lang_hindi": 0.02,
+      "eval_acc_lang_kannada": 0.66,
+      "eval_acc_lang_kashmiri": 0.6733333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.7066666666666667,
+      "eval_acc_lang_manipuri": 0.5933333333333334,
+      "eval_acc_lang_marathi": 0.64,
+      "eval_acc_lang_nepali": 0.31333333333333335,
+      "eval_acc_lang_odia": 0.29333333333333333,
+      "eval_acc_lang_punjabi": 0.7066666666666667,
+      "eval_acc_lang_sanskrit": 0.76,
+      "eval_acc_lang_santali": 0.06666666666666667,
+      "eval_acc_lang_sindhi": 0.02,
+      "eval_acc_lang_tamil": 0.82,
+      "eval_acc_lang_telugu": 0.7133333333333334,
+      "eval_acc_lang_urdu": 0.6933333333333334,
+      "eval_accuracy": 0.45181818181818184,
+      "eval_loss": 2.3283119201660156,
+      "eval_macro_f1": 0.39530451137882017,
+      "eval_runtime": 258.7615,
+      "eval_samples_per_second": 12.753,
+      "eval_steps_per_second": 12.753,
+      "step": 5200
+    },
+    {
+      "epoch": 2.4023477960639887,
+      "grad_norm": 3.073455333709717,
+      "learning_rate": 2.215783194136697e-06,
+      "loss": 7.844602966308594,
+      "step": 5220
+    },
+    {
+      "epoch": 2.411554839452181,
+      "grad_norm": 34.900634765625,
+      "learning_rate": 2.1816942219192094e-06,
+      "loss": 7.817863464355469,
+      "step": 5240
+    },
+    {
+      "epoch": 2.420761882840373,
+      "grad_norm": 4.785523891448975,
+      "learning_rate": 2.1476052497017218e-06,
+      "loss": 7.882057952880859,
+      "step": 5260
+    },
+    {
+      "epoch": 2.4299689262285646,
+      "grad_norm": 3.7524797916412354,
+      "learning_rate": 2.113516277484234e-06,
+      "loss": 7.910420227050781,
+      "step": 5280
+    },
+    {
+      "epoch": 2.4391759696167568,
+      "grad_norm": 11.400567054748535,
+      "learning_rate": 2.079427305266746e-06,
+      "loss": 7.857228088378906,
+      "step": 5300
+    },
+    {
+      "epoch": 2.448383013004949,
+      "grad_norm": 47.824928283691406,
+      "learning_rate": 2.045338333049259e-06,
+      "loss": 7.876829528808594,
+      "step": 5320
+    },
+    {
+      "epoch": 2.4575900563931405,
+      "grad_norm": 28.163965225219727,
+      "learning_rate": 2.011249360831771e-06,
+      "loss": 7.651834869384766,
+      "step": 5340
+    },
+    {
+      "epoch": 2.4667970997813327,
+      "grad_norm": 68.7435531616211,
+      "learning_rate": 1.9771603886142833e-06,
+      "loss": 7.408329010009766,
+      "step": 5360
+    },
+    {
+      "epoch": 2.4760041431695248,
+      "grad_norm": 3.5644726753234863,
+      "learning_rate": 1.943071416396796e-06,
+      "loss": 7.9521934509277346,
+      "step": 5380
+    },
+    {
+      "epoch": 2.4852111865577164,
+      "grad_norm": 3.6931471824645996,
+      "learning_rate": 1.908982444179308e-06,
+      "loss": 7.214081573486328,
+      "step": 5400
+    },
+    {
+      "epoch": 2.4852111865577164,
+      "eval_acc_lang_assamese": 0.8533333333333334,
+      "eval_acc_lang_bengali": 0.22666666666666666,
+      "eval_acc_lang_bodo": 0.4666666666666667,
+      "eval_acc_lang_dogri": 0.14,
+      "eval_acc_lang_gujarati": 0.66,
+      "eval_acc_lang_hindi": 0.02666666666666667,
+      "eval_acc_lang_kannada": 0.5866666666666667,
+      "eval_acc_lang_kashmiri": 0.7266666666666667,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.7333333333333333,
+      "eval_acc_lang_manipuri": 0.6533333333333333,
+      "eval_acc_lang_marathi": 0.72,
+      "eval_acc_lang_nepali": 0.31333333333333335,
+      "eval_acc_lang_odia": 0.22,
+      "eval_acc_lang_punjabi": 0.7266666666666667,
+      "eval_acc_lang_sanskrit": 0.7733333333333333,
+      "eval_acc_lang_santali": 0.04666666666666667,
+      "eval_acc_lang_sindhi": 0.06,
+      "eval_acc_lang_tamil": 0.8133333333333334,
+      "eval_acc_lang_telugu": 0.7466666666666667,
+      "eval_acc_lang_urdu": 0.64,
+      "eval_accuracy": 0.46060606060606063,
+      "eval_loss": 2.3073854446411133,
+      "eval_macro_f1": 0.40496008618578616,
+      "eval_runtime": 267.6532,
+      "eval_samples_per_second": 12.329,
+      "eval_steps_per_second": 12.329,
+      "step": 5400
+    },
+    {
+      "epoch": 2.4944182299459086,
+      "grad_norm": 8.558526039123535,
+      "learning_rate": 1.8748934719618205e-06,
+      "loss": 8.006427764892578,
+      "step": 5420
+    },
+    {
+      "epoch": 2.5036252733341007,
+      "grad_norm": 17.1816349029541,
+      "learning_rate": 1.8408044997443329e-06,
+      "loss": 7.703813171386718,
+      "step": 5440
+    },
+    {
+      "epoch": 2.5128323167222923,
+      "grad_norm": 3.036844253540039,
+      "learning_rate": 1.8067155275268453e-06,
+      "loss": 7.951922607421875,
+      "step": 5460
+    },
+    {
+      "epoch": 2.5220393601104845,
+      "grad_norm": 4.440465927124023,
+      "learning_rate": 1.7726265553093575e-06,
+      "loss": 7.558464813232422,
+      "step": 5480
+    },
+    {
+      "epoch": 2.5312464034986766,
+      "grad_norm": 19.039981842041016,
+      "learning_rate": 1.7385375830918699e-06,
+      "loss": 7.387612152099609,
+      "step": 5500
+    },
+    {
+      "epoch": 2.5404534468868682,
+      "grad_norm": 8.38709831237793,
+      "learning_rate": 1.7044486108743825e-06,
+      "loss": 7.806427764892578,
+      "step": 5520
+    },
+    {
+      "epoch": 2.5496604902750604,
+      "grad_norm": 4.991001605987549,
+      "learning_rate": 1.6703596386568946e-06,
+      "loss": 7.738063049316406,
+      "step": 5540
+    },
+    {
+      "epoch": 2.5588675336632525,
+      "grad_norm": 5.558383464813232,
+      "learning_rate": 1.636270666439407e-06,
+      "loss": 7.939350128173828,
+      "step": 5560
+    },
+    {
+      "epoch": 2.568074577051444,
+      "grad_norm": 6.174328804016113,
+      "learning_rate": 1.6021816942219192e-06,
+      "loss": 7.845914459228515,
+      "step": 5580
+    },
+    {
+      "epoch": 2.5772816204396363,
+      "grad_norm": 16.62431526184082,
+      "learning_rate": 1.5680927220044318e-06,
+      "loss": 7.494577026367187,
+      "step": 5600
+    },
+    {
+      "epoch": 2.5772816204396363,
+      "eval_acc_lang_assamese": 0.8533333333333334,
+      "eval_acc_lang_bengali": 0.31333333333333335,
+      "eval_acc_lang_bodo": 0.43333333333333335,
+      "eval_acc_lang_dogri": 0.14,
+      "eval_acc_lang_gujarati": 0.72,
+      "eval_acc_lang_hindi": 0.03333333333333333,
+      "eval_acc_lang_kannada": 0.6533333333333333,
+      "eval_acc_lang_kashmiri": 0.66,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.7266666666666667,
+      "eval_acc_lang_manipuri": 0.6866666666666666,
+      "eval_acc_lang_marathi": 0.76,
+      "eval_acc_lang_nepali": 0.31333333333333335,
+      "eval_acc_lang_odia": 0.07333333333333333,
+      "eval_acc_lang_punjabi": 0.74,
+      "eval_acc_lang_sanskrit": 0.6533333333333333,
+      "eval_acc_lang_santali": 0.06,
+      "eval_acc_lang_sindhi": 0.04666666666666667,
+      "eval_acc_lang_tamil": 0.82,
+      "eval_acc_lang_telugu": 0.68,
+      "eval_acc_lang_urdu": 0.6266666666666667,
+      "eval_accuracy": 0.4542424242424242,
+      "eval_loss": 2.309953451156616,
+      "eval_macro_f1": 0.39998140290402856,
+      "eval_runtime": 266.6087,
+      "eval_samples_per_second": 12.378,
+      "eval_steps_per_second": 12.378,
+      "step": 5600
+    },
+    {
+      "epoch": 2.5864886638278284,
+      "grad_norm": 51.75728225708008,
+      "learning_rate": 1.534003749786944e-06,
+      "loss": 7.311619567871094,
+      "step": 5620
+    },
+    {
+      "epoch": 2.59569570721602,
+      "grad_norm": 38.71916580200195,
+      "learning_rate": 1.4999147775694564e-06,
+      "loss": 7.750344848632812,
+      "step": 5640
+    },
+    {
+      "epoch": 2.604902750604212,
+      "grad_norm": 42.18800354003906,
+      "learning_rate": 1.4658258053519688e-06,
+      "loss": 7.913447570800781,
+      "step": 5660
+    },
+    {
+      "epoch": 2.6141097939924043,
+      "grad_norm": 28.288915634155273,
+      "learning_rate": 1.4317368331344812e-06,
+      "loss": 7.384970855712891,
+      "step": 5680
+    },
+    {
+      "epoch": 2.623316837380596,
+      "grad_norm": 26.815786361694336,
+      "learning_rate": 1.3976478609169936e-06,
+      "loss": 7.866937255859375,
+      "step": 5700
+    },
+    {
+      "epoch": 2.632523880768788,
+      "grad_norm": 5.111308574676514,
+      "learning_rate": 1.3635588886995058e-06,
+      "loss": 7.549446868896484,
+      "step": 5720
+    },
+    {
+      "epoch": 2.64173092415698,
+      "grad_norm": 5.347537517547607,
+      "learning_rate": 1.3294699164820181e-06,
+      "loss": 7.996192932128906,
+      "step": 5740
+    },
+    {
+      "epoch": 2.650937967545172,
+      "grad_norm": 6.756335258483887,
+      "learning_rate": 1.2953809442645303e-06,
+      "loss": 7.450836944580078,
+      "step": 5760
+    },
+    {
+      "epoch": 2.660145010933364,
+      "grad_norm": 5.3152174949646,
+      "learning_rate": 1.261291972047043e-06,
+      "loss": 7.491820526123047,
+      "step": 5780
+    },
+    {
+      "epoch": 2.669352054321556,
+      "grad_norm": 8.778101921081543,
+      "learning_rate": 1.2272029998295553e-06,
+      "loss": 7.867125701904297,
+      "step": 5800
+    },
+    {
+      "epoch": 2.669352054321556,
+      "eval_acc_lang_assamese": 0.8333333333333334,
+      "eval_acc_lang_bengali": 0.25333333333333335,
+      "eval_acc_lang_bodo": 0.44666666666666666,
+      "eval_acc_lang_dogri": 0.17333333333333334,
+      "eval_acc_lang_gujarati": 0.7133333333333334,
+      "eval_acc_lang_hindi": 0.04,
+      "eval_acc_lang_kannada": 0.62,
+      "eval_acc_lang_kashmiri": 0.6733333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.7933333333333333,
+      "eval_acc_lang_manipuri": 0.6933333333333334,
+      "eval_acc_lang_marathi": 0.7466666666666667,
+      "eval_acc_lang_nepali": 0.38,
+      "eval_acc_lang_odia": 0.18666666666666668,
+      "eval_acc_lang_punjabi": 0.68,
+      "eval_acc_lang_sanskrit": 0.6733333333333333,
+      "eval_acc_lang_santali": 0.06,
+      "eval_acc_lang_sindhi": 0.05333333333333334,
+      "eval_acc_lang_tamil": 0.78,
+      "eval_acc_lang_telugu": 0.7,
+      "eval_acc_lang_urdu": 0.7,
+      "eval_accuracy": 0.4636363636363636,
+      "eval_loss": 2.295156478881836,
+      "eval_macro_f1": 0.4104865115885005,
+      "eval_runtime": 267.3809,
+      "eval_samples_per_second": 12.342,
+      "eval_steps_per_second": 12.342,
+      "step": 5800
+    },
+    {
+      "epoch": 2.6785590977097478,
+      "grad_norm": 15.673674583435059,
+      "learning_rate": 1.1931140276120675e-06,
+      "loss": 7.339195251464844,
+      "step": 5820
+    },
+    {
+      "epoch": 2.68776614109794,
+      "grad_norm": 8.979641914367676,
+      "learning_rate": 1.15902505539458e-06,
+      "loss": 7.228572845458984,
+      "step": 5840
+    },
+    {
+      "epoch": 2.696973184486132,
+      "grad_norm": 14.062569618225098,
+      "learning_rate": 1.1249360831770923e-06,
+      "loss": 7.203693389892578,
+      "step": 5860
+    },
+    {
+      "epoch": 2.7061802278743237,
+      "grad_norm": 10.240991592407227,
+      "learning_rate": 1.0908471109596047e-06,
+      "loss": 7.33909912109375,
+      "step": 5880
+    },
+    {
+      "epoch": 2.715387271262516,
+      "grad_norm": 11.193205833435059,
+      "learning_rate": 1.056758138742117e-06,
+      "loss": 7.234834289550781,
+      "step": 5900
+    },
+    {
+      "epoch": 2.724594314650708,
+      "grad_norm": 5.680966377258301,
+      "learning_rate": 1.0226691665246295e-06,
+      "loss": 7.661403656005859,
+      "step": 5920
+    },
+    {
+      "epoch": 2.7338013580388996,
+      "grad_norm": 5.871899604797363,
+      "learning_rate": 9.885801943071417e-07,
+      "loss": 7.804051208496094,
+      "step": 5940
+    },
+    {
+      "epoch": 2.7430084014270917,
+      "grad_norm": 9.071362495422363,
+      "learning_rate": 9.54491222089654e-07,
+      "loss": 7.693418884277344,
+      "step": 5960
+    },
+    {
+      "epoch": 2.752215444815284,
+      "grad_norm": 7.714695453643799,
+      "learning_rate": 9.204022498721664e-07,
+      "loss": 7.536167907714844,
+      "step": 5980
+    },
+    {
+      "epoch": 2.7614224882034755,
+      "grad_norm": 18.917747497558594,
+      "learning_rate": 8.863132776546787e-07,
+      "loss": 7.990243530273437,
+      "step": 6000
+    },
+    {
+      "epoch": 2.7614224882034755,
+      "eval_acc_lang_assamese": 0.82,
+      "eval_acc_lang_bengali": 0.25333333333333335,
+      "eval_acc_lang_bodo": 0.46,
+      "eval_acc_lang_dogri": 0.12666666666666668,
+      "eval_acc_lang_gujarati": 0.72,
+      "eval_acc_lang_hindi": 0.03333333333333333,
+      "eval_acc_lang_kannada": 0.6666666666666666,
+      "eval_acc_lang_kashmiri": 0.6733333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.8066666666666666,
+      "eval_acc_lang_manipuri": 0.6933333333333334,
+      "eval_acc_lang_marathi": 0.7333333333333333,
+      "eval_acc_lang_nepali": 0.28,
+      "eval_acc_lang_odia": 0.18666666666666668,
+      "eval_acc_lang_punjabi": 0.7133333333333334,
+      "eval_acc_lang_sanskrit": 0.7266666666666667,
+      "eval_acc_lang_santali": 0.05333333333333334,
+      "eval_acc_lang_sindhi": 0.02,
+      "eval_acc_lang_tamil": 0.78,
+      "eval_acc_lang_telugu": 0.68,
+      "eval_acc_lang_urdu": 0.6933333333333334,
+      "eval_accuracy": 0.46,
+      "eval_loss": 2.2924396991729736,
+      "eval_macro_f1": 0.4019695501783698,
+      "eval_runtime": 256.4748,
+      "eval_samples_per_second": 12.867,
+      "eval_steps_per_second": 12.867,
+      "step": 6000
+    },
+    {
+      "epoch": 2.7706295315916676,
+      "grad_norm": 158.66195678710938,
+      "learning_rate": 8.522243054371912e-07,
+      "loss": 7.223235321044922,
+      "step": 6020
+    },
+    {
+      "epoch": 2.7798365749798597,
+      "grad_norm": 21.685714721679688,
+      "learning_rate": 8.181353332197035e-07,
+      "loss": 7.516541290283203,
+      "step": 6040
+    },
+    {
+      "epoch": 2.7890436183680514,
+      "grad_norm": 4.528570175170898,
+      "learning_rate": 7.840463610022159e-07,
+      "loss": 7.1426536560058596,
+      "step": 6060
+    },
+    {
+      "epoch": 2.7982506617562435,
+      "grad_norm": 8.554020881652832,
+      "learning_rate": 7.499573887847282e-07,
+      "loss": 8.241718292236328,
+      "step": 6080
+    },
+    {
+      "epoch": 2.8074577051444356,
+      "grad_norm": 7.613316535949707,
+      "learning_rate": 7.158684165672406e-07,
+      "loss": 7.755145263671875,
+      "step": 6100
+    },
+    {
+      "epoch": 2.8166647485326273,
+      "grad_norm": 6.201841354370117,
+      "learning_rate": 6.817794443497529e-07,
+      "loss": 7.5331268310546875,
+      "step": 6120
+    },
+    {
+      "epoch": 2.8258717919208194,
+      "grad_norm": 11.490540504455566,
+      "learning_rate": 6.476904721322652e-07,
+      "loss": 7.9772087097167965,
+      "step": 6140
+    },
+    {
+      "epoch": 2.8350788353090115,
+      "grad_norm": 5.809784889221191,
+      "learning_rate": 6.136014999147777e-07,
+      "loss": 7.736822509765625,
+      "step": 6160
+    },
+    {
+      "epoch": 2.844285878697203,
+      "grad_norm": 20.286916732788086,
+      "learning_rate": 5.7951252769729e-07,
+      "loss": 7.258100891113282,
+      "step": 6180
+    },
+    {
+      "epoch": 2.8534929220853953,
+      "grad_norm": 14.528964042663574,
+      "learning_rate": 5.454235554798023e-07,
+      "loss": 7.487785339355469,
+      "step": 6200
+    },
+    {
+      "epoch": 2.8534929220853953,
+      "eval_acc_lang_assamese": 0.8266666666666667,
+      "eval_acc_lang_bengali": 0.24,
+      "eval_acc_lang_bodo": 0.44666666666666666,
+      "eval_acc_lang_dogri": 0.14,
+      "eval_acc_lang_gujarati": 0.7,
+      "eval_acc_lang_hindi": 0.02,
+      "eval_acc_lang_kannada": 0.6666666666666666,
+      "eval_acc_lang_kashmiri": 0.68,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.78,
+      "eval_acc_lang_manipuri": 0.7133333333333334,
+      "eval_acc_lang_marathi": 0.7266666666666667,
+      "eval_acc_lang_nepali": 0.34,
+      "eval_acc_lang_odia": 0.29333333333333333,
+      "eval_acc_lang_punjabi": 0.7466666666666667,
+      "eval_acc_lang_sanskrit": 0.7,
+      "eval_acc_lang_santali": 0.06,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.7466666666666667,
+      "eval_acc_lang_telugu": 0.7666666666666667,
+      "eval_acc_lang_urdu": 0.66,
+      "eval_accuracy": 0.4675757575757576,
+      "eval_loss": 2.2854321002960205,
+      "eval_macro_f1": 0.4141552254717174,
+      "eval_runtime": 255.9593,
+      "eval_samples_per_second": 12.893,
+      "eval_steps_per_second": 12.893,
+      "step": 6200
+    },
+    {
+      "epoch": 2.8626999654735874,
+      "grad_norm": 8.258871078491211,
+      "learning_rate": 5.113345832623147e-07,
+      "loss": 7.160216522216797,
+      "step": 6220
+    },
+    {
+      "epoch": 2.871907008861779,
+      "grad_norm": 23.66135025024414,
+      "learning_rate": 4.77245611044827e-07,
+      "loss": 7.582984161376953,
+      "step": 6240
+    },
+    {
+      "epoch": 2.881114052249971,
+      "grad_norm": 11.799712181091309,
+      "learning_rate": 4.4315663882733936e-07,
+      "loss": 7.36820068359375,
+      "step": 6260
+    },
+    {
+      "epoch": 2.8903210956381633,
+      "grad_norm": 11.257798194885254,
+      "learning_rate": 4.0906766660985176e-07,
+      "loss": 7.7250205993652346,
+      "step": 6280
+    },
+    {
+      "epoch": 2.899528139026355,
+      "grad_norm": 5.427040100097656,
+      "learning_rate": 3.749786943923641e-07,
+      "loss": 7.347269439697266,
+      "step": 6300
+    },
+    {
+      "epoch": 2.908735182414547,
+      "grad_norm": 55.01496887207031,
+      "learning_rate": 3.4088972217487644e-07,
+      "loss": 7.740719604492187,
+      "step": 6320
+    },
+    {
+      "epoch": 2.917942225802739,
+      "grad_norm": 4.2780232429504395,
+      "learning_rate": 3.0680074995738883e-07,
+      "loss": 7.260990142822266,
+      "step": 6340
+    },
+    {
+      "epoch": 2.927149269190931,
+      "grad_norm": 6.151259422302246,
+      "learning_rate": 2.7271177773990117e-07,
+      "loss": 7.4424896240234375,
+      "step": 6360
+    },
+    {
+      "epoch": 2.936356312579123,
+      "grad_norm": 18.763748168945312,
+      "learning_rate": 2.386228055224135e-07,
+      "loss": 7.494862365722656,
+      "step": 6380
+    },
+    {
+      "epoch": 2.945563355967315,
+      "grad_norm": 9.118412971496582,
+      "learning_rate": 2.0453383330492588e-07,
+      "loss": 7.348274230957031,
+      "step": 6400
+    },
+    {
+      "epoch": 2.945563355967315,
+      "eval_acc_lang_assamese": 0.8133333333333334,
+      "eval_acc_lang_bengali": 0.20666666666666667,
+      "eval_acc_lang_bodo": 0.44666666666666666,
+      "eval_acc_lang_dogri": 0.12666666666666668,
+      "eval_acc_lang_gujarati": 0.7133333333333334,
+      "eval_acc_lang_hindi": 0.02666666666666667,
+      "eval_acc_lang_kannada": 0.7,
+      "eval_acc_lang_kashmiri": 0.6733333333333333,
+      "eval_acc_lang_konkani": 0.0,
+      "eval_acc_lang_maithili": 0.0,
+      "eval_acc_lang_malayalam": 0.7733333333333333,
+      "eval_acc_lang_manipuri": 0.6933333333333334,
+      "eval_acc_lang_marathi": 0.7466666666666667,
+      "eval_acc_lang_nepali": 0.32666666666666666,
+      "eval_acc_lang_odia": 0.32666666666666666,
+      "eval_acc_lang_punjabi": 0.7266666666666667,
+      "eval_acc_lang_sanskrit": 0.74,
+      "eval_acc_lang_santali": 0.06,
+      "eval_acc_lang_sindhi": 0.03333333333333333,
+      "eval_acc_lang_tamil": 0.7266666666666667,
+      "eval_acc_lang_telugu": 0.74,
+      "eval_acc_lang_urdu": 0.66,
+      "eval_accuracy": 0.46636363636363637,
+      "eval_loss": 2.286938428878784,
+      "eval_macro_f1": 0.41143069417930617,
+      "eval_runtime": 261.4772,
+      "eval_samples_per_second": 12.621,
+      "eval_steps_per_second": 12.621,
+      "step": 6400
+    },
+    {
+      "epoch": 2.954770399355507,
+      "grad_norm": 6.712680816650391,
+      "learning_rate": 1.7044486108743822e-07,
+      "loss": 7.963836669921875,
+      "step": 6420
+    },
+    {
+      "epoch": 2.963977442743699,
+      "grad_norm": 4.111622333526611,
+      "learning_rate": 1.3635588886995059e-07,
+      "loss": 7.5598091125488285,
+      "step": 6440
+    },
+    {
+      "epoch": 2.973184486131891,
+      "grad_norm": 5.117000579833984,
+      "learning_rate": 1.0226691665246294e-07,
+      "loss": 7.4681953430175785,
+      "step": 6460
+    },
+    {
+      "epoch": 2.9823915295200827,
+      "grad_norm": 12.01259994506836,
+      "learning_rate": 6.817794443497529e-08,
+      "loss": 7.488558959960938,
+      "step": 6480
+    },
+    {
+      "epoch": 2.991598572908275,
+      "grad_norm": 19.097658157348633,
+      "learning_rate": 3.4088972217487646e-08,
+      "loss": 7.609561157226563,
+      "step": 6500
+    },
+    {
+      "epoch": 3.0,
+      "step": 6519,
+      "total_flos": 1.144297139774882e+18,
+      "train_loss": 9.351914290106174,
+      "train_runtime": 14455.7538,
+      "train_samples_per_second": 1.803,
+      "train_steps_per_second": 0.451
+    }
+  ],
+  "logging_steps": 20,
+  "max_steps": 6519,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 3,
+  "save_steps": 200,
+  "stateful_callbacks": {
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": true
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 1.144297139774882e+18,
+  "train_batch_size": 1,
+  "trial_name": null,
+  "trial_params": null
+}
